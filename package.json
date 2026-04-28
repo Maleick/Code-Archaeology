@@ -1,0 +1,61 @@
+{
+  "name": "opencode-code-archaeology",
+  "version": "2.0.0",
+  "description": "Excavate, catalog, and restore a codebase by removing accumulated sediment—dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "opencode-code-archaeology": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "hooks",
+    "commands",
+    "skills",
+    "plugins",
+    "policies",
+    "schema",
+    "AGENTS.md",
+    "VERSION",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "verify:pack": "bash hooks/opencode/verify-package.sh",
+    "prepack": "tsc"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "refactor",
+    "cleanup",
+    "static-analysis",
+    "code-quality",
+    "archaeology"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maleick/Code-Archaeology.git"
+  },
+  "homepage": "https://github.com/Maleick/Code-Archaeology",
+  "bugs": {
+    "url": "https://github.com/Maleick/Code-Archaeology/issues"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

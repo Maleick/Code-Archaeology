@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output (keep for npm pack, ignore in git)
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Local state
+.archaeology/
+
+# Worktrees
+.worktrees/
