@@ -1,0 +1,19 @@
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+import { readFileSync } from "node:fs";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageRoot = resolve(__dirname, "..");
+export const id = "code-archaeology";
+export const repoRoot = packageRoot;
+const versionPath = resolve(packageRoot, "VERSION");
+export const version = readFileSync(versionPath, "utf8").trim();
+export async function server() {
+    return {
+        event() {
+            return undefined;
+        },
+    };
+}
+export * from "./types.js";
+//# sourceMappingURL=index.js.map

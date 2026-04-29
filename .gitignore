@@ -1,8 +1,8 @@
 # Dependencies
 node_modules/
 
-# Build output (keep for npm pack, ignore in git)
-dist/
+# Build output (committed for GitHub installs)
+# dist/
 
 # Logs
 *.log
