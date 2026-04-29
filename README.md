@@ -1,5 +1,7 @@
 # Code Archaeology
 
+[![GitHub Release](https://img.shields.io/github/v/release/Maleick/Code-Archaeology)](https://github.com/Maleick/Code-Archaeology/releases)
+
 A systematic excavation plugin for OpenCode. Removes accumulated sediment from a codebase—dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop—to restore the original architecture.
 
 ## ⚠️ Site Safety
@@ -15,15 +17,53 @@ This plugin modifies code. By default it runs in **survey** mode, producing site
 
 ## Installation
 
-```bash
-# As an OpenCode plugin
-npm install -g opencode-code-archaeology
+### For OpenCode Users (Recommended)
 
-# Or clone and link
+Add to your OpenCode plugin configuration (`~/.config/opencode/package.json`):
+
+```json
+{
+  "dependencies": {
+    "opencode-code-archaeology": "github:Maleick/Code-Archaeology#main"
+  }
+}
+```
+
+Then run:
+
+```bash
+bun install
+```
+
+OpenCode will automatically load the plugin on next start.
+
+### Manual / Development
+
+```bash
+# Clone and link for local development
 git clone https://github.com/Maleick/Code-Archaeology.git
 cd Code-Archaeology
+npm install
 npm link
 ```
+
+### Auto-Update
+
+This plugin supports automatic updates via `bun update`:
+
+- **Source of truth**: The `main` branch on GitHub (not npm or GitHub Releases)
+- **Update mechanism**: A daily `bun update` job pulls the latest commit from `main`
+- **Cache location**: `~/.cache/opencode/packages/opencode-code-archaeology/`
+
+**To verify your installed version:**
+
+```bash
+cat ~/.config/opencode/node_modules/opencode-code-archaeology/package.json | grep version
+```
+
+This should match the latest commit on `main` and the version shown in this repository's `package.json`.
+
+**Note for maintainers:** When releasing, always bump `package.json` version and commit to `main`. GitHub Releases are for discoverability and changelogs only; the `main` branch is what consumers actually receive.
 
 ## Usage
 
