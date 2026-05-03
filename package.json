@@ -27,6 +27,7 @@
     "prompts",
     "schema",
     "docs/README.md",
+    "docs/index.html",
     "docs/INSTALL.md",
     "docs/ARCHITECTURE.md",
     "docs/RELEASE.md",

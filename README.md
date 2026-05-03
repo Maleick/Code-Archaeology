@@ -23,6 +23,8 @@
   <a href="#release-docs">Release</a>
 </p>
 
+Excavate technical debt. Restore with confidence.
+
 Code Archaeology is an OpenCode plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order.
 
 ```text
@@ -71,10 +73,7 @@ Recommended plugin install in `opencode.json`:
 Global npm install path:
 
 ```bash
-npm install -g opencode-code-archaeology
-opencode-code-archaeology install
-opencode-code-archaeology doctor
-opencode-code-archaeology version
+npm install -g opencode-code-archaeology && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 One-time package runner path, if your OpenCode setup supports package execution through Bun:

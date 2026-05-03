@@ -19,6 +19,7 @@ const requiredFiles = [
   'hooks/opencode/verify-package.sh',
   'prompts/discovery.md',
   'schema/expedition-report.json',
+  'docs/index.html',
   'docs/README.md',
   'wiki/Home.md',
   'assets/code-archaeology-banner.svg',

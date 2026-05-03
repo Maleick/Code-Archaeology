@@ -1,8 +1,10 @@
 # Code Archaeology Documentation
 
+Excavate technical debt. Restore with confidence.
+
 Code Archaeology is an OpenCode plugin for systematic codebase excavation, cataloging, and restoration. It runs inside the target repository, writes local `.archaeology/` reports, and only modifies source files in `restore` mode after review and verification.
 
-These Markdown files are ready to serve from GitHub Pages, but this repository does not assume Pages is already enabled.
+The public landing page is [`index.html`](index.html). These Markdown files remain the detailed documentation source.
 
 ## Quick Links
 
@@ -18,10 +20,13 @@ These Markdown files are ready to serve from GitHub Pages, but this repository d
 Install the package globally, register the plugin, then verify the CLI:
 
 ```bash
-npm install -g opencode-code-archaeology
-opencode-code-archaeology install
-opencode-code-archaeology doctor
-opencode-code-archaeology version
+npm install -g opencode-code-archaeology && opencode-code-archaeology install && opencode-code-archaeology doctor
+```
+
+Or tell OpenCode:
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
 ```
 
 Restart OpenCode in the repository you want to inspect and start with the non-destructive survey command:

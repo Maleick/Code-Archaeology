@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Code Archaeology - OpenCode Technical Debt Excavation</title>
+    <meta
+      name="description"
+      content="Code Archaeology is an OpenCode plugin that surveys, catalogs, and safely restores codebases by excavating technical debt."
+    >
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #06090f;
+        --panel: rgba(15, 23, 42, 0.82);
+        --panel-strong: rgba(15, 23, 42, 0.96);
+        --line: rgba(148, 163, 184, 0.22);
+        --text: #f8fafc;
+        --muted: #aab6c7;
+        --gold: #f6c453;
+        --amber: #d9952f;
+        --blue: #38bdf8;
+        --green: #22c55e;
+        --red: #f97373;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 16% 10%, rgba(246, 196, 83, 0.14), transparent 24rem),
+          radial-gradient(circle at 85% 18%, rgba(56, 189, 248, 0.12), transparent 26rem),
+          linear-gradient(160deg, #05070c 0%, #0a1220 48%, #150c05 100%);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(6, 9, 15, 0.82);
+        backdrop-filter: blur(18px);
+      }
+
+      .topbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
+        gap: 24px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(246, 196, 83, 0.5);
+        border-radius: 14px;
+        background: linear-gradient(145deg, rgba(246, 196, 83, 0.22), rgba(56, 189, 248, 0.08));
+        box-shadow: 0 0 32px rgba(246, 196, 83, 0.12);
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      nav a {
+        text-decoration: none;
+      }
+
+      nav a:hover {
+        color: var(--text);
+      }
+
+      .hero {
+        position: relative;
+        padding: 82px 0 56px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.03fr) minmax(360px, 0.97fr);
+        align-items: center;
+        gap: 44px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border: 1px solid rgba(246, 196, 83, 0.28);
+        border-radius: 999px;
+        background: rgba(246, 196, 83, 0.08);
+        color: #fbdc8a;
+        font-size: 0.86rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 860px;
+        margin: 22px 0 16px;
+        font-size: clamp(3.2rem, 8vw, 7.2rem);
+        line-height: 0.92;
+        letter-spacing: -0.075em;
+      }
+
+      .gradient-text {
+        background: linear-gradient(105deg, #fff7d6 0%, #f6c453 36%, #38bdf8 78%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .lede {
+        max-width: 690px;
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: clamp(1.08rem, 2vw, 1.35rem);
+      }
+
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin: 30px 0;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 48px;
+        padding: 0 18px;
+        border: 1px solid rgba(246, 196, 83, 0.42);
+        border-radius: 14px;
+        background: linear-gradient(135deg, #f6c453, #d9952f);
+        color: #0f172a;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 16px 36px rgba(217, 149, 47, 0.2);
+      }
+
+      .button.secondary {
+        background: rgba(15, 23, 42, 0.62);
+        color: var(--text);
+        border-color: var(--line);
+        box-shadow: none;
+      }
+
+      .command-card {
+        margin-top: 22px;
+        border: 1px solid rgba(246, 196, 83, 0.28);
+        border-radius: 22px;
+        background: rgba(2, 6, 23, 0.78);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .command-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        color: #fbdc8a;
+        font-size: 0.84rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .copy-button {
+        cursor: pointer;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--text);
+        font: inherit;
+        font-size: 0.76rem;
+        font-weight: 800;
+        padding: 7px 11px;
+      }
+
+      pre {
+        margin: 0;
+        padding: 18px;
+        overflow-x: auto;
+        color: #dbeafe;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 0.92rem;
+        line-height: 1.55;
+      }
+
+      .artifact-card {
+        position: relative;
+        min-height: 520px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 32px;
+        background:
+          linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(20, 12, 5, 0.9)),
+          radial-gradient(circle at 50% 20%, rgba(246, 196, 83, 0.18), transparent 18rem);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .artifact-card::before,
+      .artifact-card::after {
+        content: "";
+        position: absolute;
+        right: -12%;
+        left: -8%;
+        height: 130px;
+        border-radius: 50% 50% 0 0;
+      }
+
+      .artifact-card::before {
+        bottom: 42px;
+        background: rgba(91, 55, 23, 0.92);
+        transform: rotate(-3deg);
+      }
+
+      .artifact-card::after {
+        bottom: -8px;
+        background: linear-gradient(90deg, #8b5a2b, #e0b15b, #8b5a2b);
+        transform: rotate(2deg);
+      }
+
+      .artifact-inner {
+        position: relative;
+        z-index: 2;
+        padding: 34px;
+      }
+
+      .tablet {
+        width: min(280px, 75%);
+        margin: 18px auto 34px;
+        filter: drop-shadow(0 30px 45px rgba(0, 0, 0, 0.35));
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .status {
+        padding: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 18px;
+        background: rgba(2, 6, 23, 0.62);
+      }
+
+      .status strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .status span {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      section {
+        padding: 62px 0;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.7rem);
+        line-height: 1;
+        letter-spacing: -0.055em;
+      }
+
+      .section-head p,
+      .muted {
+        color: var(--muted);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: 0 16px 55px rgba(0, 0, 0, 0.18);
+        padding: 24px;
+      }
+
+      .card h3 {
+        margin: 0 0 9px;
+        font-size: 1.18rem;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .pill {
+        display: inline-flex;
+        margin-bottom: 18px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.1);
+        color: #bae6fd;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .flow {
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--panel-strong);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        overflow: hidden;
+      }
+
+      .flow svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .steps {
+        display: grid;
+        gap: 12px;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.66);
+      }
+
+      .step-number {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 16px;
+        background: rgba(246, 196, 83, 0.14);
+        color: #fbdc8a;
+        font-weight: 900;
+      }
+
+      .step h3 {
+        margin: 0 0 3px;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .install-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+      }
+
+      .warning {
+        border-color: rgba(249, 115, 115, 0.34);
+        background: linear-gradient(135deg, rgba(249, 115, 115, 0.1), rgba(15, 23, 42, 0.82));
+      }
+
+      footer {
+        padding: 46px 0 70px;
+        color: var(--muted);
+      }
+
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        border-top: 1px solid var(--line);
+        padding-top: 24px;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .footer-links a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .split,
+        .install-grid,
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        nav {
+          display: none;
+        }
+
+        .artifact-card {
+          min-height: auto;
+        }
+
+        .section-head {
+          display: block;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .shell {
+          width: min(100% - 24px, 1180px);
+        }
+
+        .hero {
+          padding-top: 46px;
+        }
+
+        h1 {
+          font-size: clamp(3rem, 18vw, 4.5rem);
+        }
+
+        .status-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="shell topbar-inner">
+        <a class="brand" href="#top" aria-label="Code Archaeology home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="25" height="25" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 5h16l-3 18H10L7 5Z" fill="#111827" stroke="#f6c453" stroke-width="2"/>
+              <path d="M12 10h7M12 15h6M12 20h4" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+              <path d="M20 21l6 6" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Code Archaeology</span>
+        </a>
+        <nav aria-label="Primary navigation">
+          <a href="#install">Install</a>
+          <a href="#flow">Flow</a>
+          <a href="#safety">Safety</a>
+          <a href="https://github.com/Maleick/Code-Archaeology">GitHub</a>
+          <a href="https://www.npmjs.com/package/opencode-code-archaeology">npm</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="shell hero-grid">
+          <div>
+            <span class="eyebrow">OpenCode plugin</span>
+            <h1><span class="gradient-text">Excavate technical debt.</span><br>Restore with confidence.</h1>
+            <p class="lede">
+              Code Archaeology surveys your repository, catalogs the strata of accumulated debt,
+              and applies restoration work only after review, verification, and test gates.
+            </p>
+            <div class="cta-row">
+              <a class="button" href="#install">Install in OpenCode</a>
+              <a class="button secondary" href="https://github.com/Maleick/Code-Archaeology">View repository</a>
+            </div>
+
+            <div class="command-card" id="install">
+              <div class="command-label">
+                <span>OpenCode one-line handoff</span>
+                <button class="copy-button" type="button" data-copy="Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md">Copy</button>
+              </div>
+              <pre><code>Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md</code></pre>
+            </div>
+          </div>
+
+          <aside class="artifact-card" aria-label="Code Archaeology capability graphic">
+            <div class="artifact-inner">
+              <svg class="tablet" viewBox="0 0 280 260" role="img" aria-labelledby="tablet-title tablet-desc" xmlns="http://www.w3.org/2000/svg">
+                <title id="tablet-title">Archaeology tablet and scanner</title>
+                <desc id="tablet-desc">An excavation tablet representing code reports, with a scanner representing safe restoration.</desc>
+                <defs>
+                  <linearGradient id="tabletFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#334155"/>
+                    <stop offset="1" stop-color="#0f172a"/>
+                  </linearGradient>
+                  <linearGradient id="scanner" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#f6c453"/>
+                    <stop offset="1" stop-color="#38bdf8"/>
+                  </linearGradient>
+                </defs>
+                <path d="M70 12l115 30-23 158H42L15 42 70 12Z" fill="url(#tabletFill)" stroke="#94a3b8" stroke-width="4"/>
+                <circle cx="76" cy="45" r="10" fill="#f6c453"/>
+                <path d="M58 82h86M62 112h100M67 142h74" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+                <path d="M154 176l55 55" stroke="url(#scanner)" stroke-width="16" stroke-linecap="round"/>
+                <path d="M196 238l58-58" stroke="url(#scanner)" stroke-width="16" stroke-linecap="round"/>
+                <path d="M205 170c21-22 57-20 75 3l-42 42-33-45Z" fill="#020617" stroke="#f6c453" stroke-width="7"/>
+              </svg>
+              <div class="status-grid">
+                <div class="status"><strong>Survey</strong><span>reports only</span></div>
+                <div class="status"><strong>Excavate</strong><span>mock patches</span></div>
+                <div class="status"><strong>Restore</strong><span>test-gated edits</span></div>
+                <div class="status"><strong>Catalog</strong><span>final preservation</span></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section>
+        <div class="shell section-head">
+          <div>
+            <span class="eyebrow">Why it exists</span>
+            <h2>Technical debt cleanup with an audit trail.</h2>
+          </div>
+          <p>Start with evidence. Review the site report. Restore only what can be verified.</p>
+        </div>
+        <div class="shell cards">
+          <article class="card">
+            <span class="pill">Catalog</span>
+            <h3>Find the buried layers</h3>
+            <p>Dead code, legacy fallbacks, circular dependencies, weak types, duplication, and defensive slop are cataloged before changes happen.</p>
+          </article>
+          <article class="card">
+            <span class="pill">Review</span>
+            <h3>Separate reports from edits</h3>
+            <p>`survey` mode writes `.archaeology/` reports only. `excavate` adds mock patches for review. `restore` is the only mode that edits source files.</p>
+          </article>
+          <article class="card">
+            <span class="pill">Verify</span>
+            <h3>Gate every restoration</h3>
+            <p>Restore phases run tests and type checks between expeditions, then revert and stop if a phase introduces failures.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="flow">
+        <div class="shell section-head">
+          <div>
+            <span class="eyebrow">Expedition map</span>
+            <h2>From survey to final catalog.</h2>
+          </div>
+          <p>The order is fixed so cleanup does not hide evidence or break later analysis.</p>
+        </div>
+        <div class="shell flow">
+          <svg viewBox="0 0 1120 360" role="img" aria-labelledby="flow-title flow-desc" xmlns="http://www.w3.org/2000/svg">
+            <title id="flow-title">Code Archaeology expedition flow</title>
+            <desc id="flow-desc">A diagram showing survey, dead code, legacy, cycles, types, DRY, errors, polish, and final catalog phases.</desc>
+            <defs>
+              <linearGradient id="node" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#172033"/>
+                <stop offset="1" stop-color="#0b1020"/>
+              </linearGradient>
+              <marker id="arrow" markerWidth="12" markerHeight="12" refX="8" refY="6" orient="auto">
+                <path d="M2 2l7 4-7 4V2Z" fill="#f6c453"/>
+              </marker>
+            </defs>
+            <rect width="1120" height="360" rx="24" fill="#070b14"/>
+            <g stroke="#f6c453" stroke-width="3" marker-end="url(#arrow)" opacity=".85">
+              <path d="M158 96h84"/>
+              <path d="M354 96h84"/>
+              <path d="M550 96h84"/>
+              <path d="M746 96h84"/>
+              <path d="M942 96v76"/>
+              <path d="M830 264h-84"/>
+              <path d="M634 264h-84"/>
+              <path d="M438 264h-84"/>
+              <path d="M242 264h-84"/>
+            </g>
+            <g font-family="Inter, Segoe UI, Arial, sans-serif" text-anchor="middle">
+              <g transform="translate(86 96)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">1 Survey</text><text y="20" fill="#94a3b8" font-size="13">baseline report</text></g>
+              <g transform="translate(282 96)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">2 Dead Code</text><text y="20" fill="#94a3b8" font-size="13">unused strata</text></g>
+              <g transform="translate(478 96)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">3 Legacy</text><text y="20" fill="#94a3b8" font-size="13">old shims</text></g>
+              <g transform="translate(674 96)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">4 Cycles</text><text y="20" fill="#94a3b8" font-size="13">dependency map</text></g>
+              <g transform="translate(870 96)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">5 Types</text><text y="20" fill="#94a3b8" font-size="13">catalog repair</text></g>
+              <g transform="translate(870 264)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">6 Harden</text><text y="20" fill="#94a3b8" font-size="13">no guessing</text></g>
+              <g transform="translate(674 264)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">7 DRY</text><text y="20" fill="#94a3b8" font-size="13">dedupe safely</text></g>
+              <g transform="translate(478 264)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">8 Errors</text><text y="20" fill="#94a3b8" font-size="13">keep boundaries</text></g>
+              <g transform="translate(282 264)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="url(#node)" stroke="#334155"/><text y="-6" fill="#f8fafc" font-weight="800">9 Polish</text><text y="20" fill="#94a3b8" font-size="13">clean artifacts</text></g>
+              <g transform="translate(86 264)"><rect x="-72" y="-42" width="144" height="84" rx="20" fill="#1f1609" stroke="#f6c453"/><text y="-6" fill="#f8fafc" font-weight="800">10 Catalog</text><text y="20" fill="#fbdc8a" font-size="13">preserve site</text></g>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section id="safety">
+        <div class="shell split">
+          <div class="card warning">
+            <span class="pill">Safety model</span>
+            <h2>Reports first. Edits last.</h2>
+            <p class="muted">
+              Code Archaeology treats your repository like a site under excavation. It records evidence,
+              asks for review, and only modifies source files when restore mode is deliberately selected.
+            </p>
+          </div>
+          <div class="steps">
+            <div class="step"><div class="step-number">01</div><div><h3>Survey</h3><p>Generate `.archaeology/` reports without touching source files.</p></div></div>
+            <div class="step"><div class="step-number">02</div><div><h3>Excavate</h3><p>Create reports and mock patches so humans can inspect intended changes.</p></div></div>
+            <div class="step"><div class="step-number">03</div><div><h3>Restore</h3><p>Apply approved changes on an isolated branch with test and type-check gates.</p></div></div>
+            <div class="step"><div class="step-number">04</div><div><h3>Revert on failure</h3><p>If verification fails, the phase is reverted and the expedition stops.</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="shell section-head">
+          <div>
+            <span class="eyebrow">Install paths</span>
+            <h2>One handoff for agents. One command chain for terminals.</h2>
+          </div>
+        </div>
+        <div class="shell install-grid">
+          <div class="command-card">
+            <div class="command-label">
+              <span>Tell OpenCode</span>
+              <button class="copy-button" type="button" data-copy="Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md">Copy</button>
+            </div>
+            <pre><code>Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md</code></pre>
+          </div>
+          <div class="command-card">
+            <div class="command-label">
+              <span>Install with npm</span>
+              <button class="copy-button" type="button" data-copy="npm install -g opencode-code-archaeology && opencode-code-archaeology install && opencode-code-archaeology doctor">Copy</button>
+            </div>
+            <pre><code>npm install -g opencode-code-archaeology && opencode-code-archaeology install && opencode-code-archaeology doctor</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell footer-inner">
+        <div>Code Archaeology - Excavate technical debt. Restore with confidence.</div>
+        <div class="footer-links">
+          <a href="README.md">Docs</a>
+          <a href="INSTALL.md">Install guide</a>
+          <a href="https://github.com/Maleick/Code-Archaeology/wiki">Wiki</a>
+          <a href="https://github.com/Maleick/Code-Archaeology/releases">Releases</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      for (const button of document.querySelectorAll('[data-copy]')) {
+        button.addEventListener('click', async () => {
+          const text = button.getAttribute('data-copy') || '';
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Copied';
+            setTimeout(() => {
+              button.textContent = original;
+            }, 1400);
+          } catch {
+            button.textContent = 'Select text';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
