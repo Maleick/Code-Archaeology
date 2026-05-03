@@ -4,6 +4,7 @@
 
 ## Verification
 
+- [ ] Polish pass completed before commit, push, and PR.
 - [ ] `npm run build`
 - [ ] `npm run typecheck`
 - [ ] `npm test`

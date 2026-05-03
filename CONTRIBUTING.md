@@ -34,6 +34,8 @@ npm pack --json --dry-run
 
 If a restore-mode change modifies behavior, verify it against a disposable repository or fixture and document the result.
 
+Before committing, pushing, or opening a PR, run a polish pass over the changed surface. Check wording, links, visuals, accessibility, package contents, and whether the repository presentation still looks complete.
+
 ## Documentation Expectations
 
 - Update `README.md`, `INSTALL.md`, `docs/`, or `wiki/` when installation, commands, workflow, safety, or release behavior changes.

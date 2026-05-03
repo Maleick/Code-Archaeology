@@ -186,6 +186,16 @@
         box-shadow: none;
       }
 
+      code.inline-code {
+        padding: 0.15em 0.4em;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 0.45em;
+        background: rgba(148, 163, 184, 0.12);
+        color: #e2e8f0;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 0.92em;
+      }
+
       .command-card {
         margin-top: 22px;
         border: 1px solid rgba(246, 196, 83, 0.28);
@@ -524,7 +534,7 @@
         <div class="shell hero-grid">
           <div>
             <span class="eyebrow">OpenCode plugin</span>
-            <h1><span class="gradient-text">Excavate technical debt.</span><br>Restore with confidence.</h1>
+            <h1><span class="gradient-text">Excavate technical debt.</span><br><span>Restore with confidence.</span></h1>
             <p class="lede">
               Code Archaeology surveys your repository, catalogs the strata of accumulated debt,
               and applies restoration work only after review, verification, and test gates.
@@ -593,7 +603,7 @@
           <article class="card">
             <span class="pill">Review</span>
             <h3>Separate reports from edits</h3>
-            <p>`survey` mode writes `.archaeology/` reports only. `excavate` adds mock patches for review. `restore` is the only mode that edits source files.</p>
+            <p><code class="inline-code">survey</code> mode writes <code class="inline-code">.archaeology/</code> reports only. <code class="inline-code">excavate</code> adds mock patches for review. <code class="inline-code">restore</code> is the only mode that edits source files.</p>
           </article>
           <article class="card">
             <span class="pill">Verify</span>
@@ -663,7 +673,7 @@
             </p>
           </div>
           <div class="steps">
-            <div class="step"><div class="step-number">01</div><div><h3>Survey</h3><p>Generate `.archaeology/` reports without touching source files.</p></div></div>
+            <div class="step"><div class="step-number">01</div><div><h3>Survey</h3><p>Generate <code class="inline-code">.archaeology/</code> reports without touching source files.</p></div></div>
             <div class="step"><div class="step-number">02</div><div><h3>Excavate</h3><p>Create reports and mock patches so humans can inspect intended changes.</p></div></div>
             <div class="step"><div class="step-number">03</div><div><h3>Restore</h3><p>Apply approved changes on an isolated branch with test and type-check gates.</p></div></div>
             <div class="step"><div class="step-number">04</div><div><h3>Revert on failure</h3><p>If verification fails, the phase is reverted and the expedition stops.</p></div></div>
