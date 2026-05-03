@@ -2,7 +2,7 @@
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is an OpenCode plugin for systematic codebase excavation, cataloging, and restoration. It runs inside the target repository, writes local `.archaeology/` reports, and only modifies source files in `restore` mode after review and verification.
+Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports both **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution). It runs inside the target repository, writes local `.archaeology/` reports, and only modifies source files in `restore` mode after review and verification.
 
 The public landing page is [`index.html`](index.html). These Markdown files remain the detailed documentation source.
 
@@ -14,8 +14,12 @@ The public landing page is [`index.html`](index.html). These Markdown files rema
 - [Security Audit](SECURITY_AUDIT.md)
 - [Repository README](../README.md)
 - [Root Install Handoff](../INSTALL.md)
+- [Hermes Integration](../skills/hermes/INTEGRATION.md)
+- [Hermes Skill](../skills/hermes/README.md)
 
 ## Quick Start
+
+### OpenCode
 
 Install the package globally, register the plugin, then verify the CLI:
 
@@ -41,6 +45,23 @@ Review `.archaeology/site_survey.md` and expedition reports before using:
 /code-archaeology-excavate
 /code-archaeology-restore
 ```
+
+### Hermes Agent
+
+Setup the Hermes runtime and create a cronjob:
+
+```bash
+cd ~/projects/Code-Archaeology
+bash hooks/hermes/setup.sh
+
+hermes cronjob create \
+  --name "code-archaeology-expedition" \
+  --schedule "every 15m" \
+  --workdir ~/projects/Code-Archaeology \
+  --prompt "Run one Code Archaeology expedition phase. Read .archaeology/session.json, execute current phase with test/typecheck verification, advance to next phase. STOP after one phase."
+```
+
+Each cron run executes exactly **one** phase. Ten phases complete in ~2.5 hours minimum.
 
 ## Safety Warning
 

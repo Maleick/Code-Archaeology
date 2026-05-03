@@ -43,6 +43,7 @@ npm run typecheck
 npm audit --audit-level=moderate
 npm outdated --json
 bash -n hooks/opencode/*.sh
+bash -n hooks/hermes/*.sh
 npm pack --json --dry-run
 ```
 
@@ -51,7 +52,7 @@ Expected outcomes:
 - Build and typecheck pass.
 - npm audit reports no moderate-or-higher vulnerabilities.
 - npm outdated reports `{}` or no actionable outdated dependencies.
-- Shell hooks pass syntax checks.
+- Shell hooks pass syntax checks (both OpenCode and Hermes).
 - The package dry run includes required files.
 
 ## 5. npm Pack Required Files

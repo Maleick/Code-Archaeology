@@ -1,7 +1,7 @@
 <h1 align="center">Code Archaeology</h1>
 
 <p align="center">
-  <img src="assets/code-archaeology-banner.svg" alt="Code Archaeology OpenCode plugin banner" width="900">
+  <img src="assets/code-archaeology-banner.svg" alt="Code Archaeology multi-runtime banner" width="900">
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is an OpenCode plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order.
+Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution).
 
 ```text
 +---------------------------------------------------------------+
@@ -35,7 +35,7 @@ Code Archaeology is an OpenCode plugin that surveys, catalogs, and safely restor
 | Review mode        | excavate: reports plus mock patches       |
 | Restore mode       | applies approved changes with test gates  |
 | Local state        | .archaeology/ runtime artifacts           |
-| Runtime            | OpenCode plugin inside the target repo    |
+| Runtimes           | OpenCode plugin + Hermes Agent cron       |
 | Expedition order   | fixed stratigraphy from survey to catalog |
 +-------------------+-------------------------------------------+
 ```
@@ -51,10 +51,13 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 - Hardens weak types without guessing uncertain replacements.
 - Finds semantic duplication and error-handling slop while preserving I/O boundaries.
 - Produces `.archaeology/` reports that stay local to the working repository.
+- Supports both **OpenCode** interactive sessions and **Hermes Agent** cron-based phased execution.
 
 ## Installation
 
-For OpenCode, paste this handoff into your agent:
+### OpenCode
+
+Paste this handoff into your agent:
 
 ```text
 Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
@@ -83,9 +86,25 @@ bunx opencode-code-archaeology install
 bunx opencode-code-archaeology doctor
 ```
 
+### Hermes Agent
+
+```bash
+npm install -g opencode-code-archaeology
+cd ~/projects/Code-Archaeology
+bash hooks/hermes/setup.sh
+
+hermes cronjob create \
+  --name "code-archaeology-expedition" \
+  --schedule "every 15m" \
+  --workdir ~/projects/Code-Archaeology \
+  --prompt "Run one Code Archaeology expedition phase. Read .archaeology/session.json, execute current phase with verification, advance to next phase."
+```
+
 See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and troubleshooting.
 
 ## Quick Start
+
+### OpenCode
 
 Run the command family from inside the repository you want to inspect:
 
@@ -101,11 +120,33 @@ Start non-destructively, review the reports, then choose whether to generate moc
 /code-archaeology-restore
 ```
 
+### Hermes Agent
+
+Each cron run executes exactly **one** phase. The runner reads `.archaeology/session.json`, runs the current phase with verification, and advances to the next phase:
+
+```bash
+bash hooks/hermes/runner.sh
+```
+
+Ten phases complete in ~2.5 hours minimum (15-minute intervals).
+
+## Runtime Surfaces
+
+| Feature | OpenCode | Hermes Agent |
+|---------|----------|--------------|
+| Entry | `/code-archaeology` slash command | `cronjob` |
+| Phases | All in one session | One per cron run |
+| Verification | Between expeditions | Between every phase |
+| Revert | Manual or automatic | Automatic on failure |
+| State | `.archaeology/session.json` | Same file |
+| Background | Plugin stays active | Cron resumes automatically |
+| Real-time | Yes | Delayed (15-min intervals) |
+
 ## Expedition Flow
 
 ```mermaid
 flowchart TD
-  A[Start /code-archaeology] --> B[Site Survey and Baseline]
+  A[Start] --> B[Site Survey and Baseline]
   B --> C[Dead Code Excavation]
   C --> D[Legacy Stratum Removal]
   D --> E[Circular Dependency Cartography]
@@ -140,6 +181,8 @@ flowchart LR
 
 ## Commands
 
+### OpenCode
+
 | Command | Purpose | File changes |
 | --- | --- | --- |
 | `/code-archaeology` | Start the full expedition in the configured mode. | Depends on mode; defaults to none. |
@@ -147,17 +190,26 @@ flowchart LR
 | `/code-archaeology-excavate` | Generate reports and mock patches. | None outside `.archaeology/patches/`. |
 | `/code-archaeology-restore` | Apply approved high-confidence changes. | Yes, test-gated. |
 
+### Hermes Agent
+
+| OpenCode Equivalent | Hermes Mechanism | File changes |
+| --- | --- | --- |
+| `/code-archaeology` | `cronjob` runs expedition loop | Depends on mode |
+| `/code-archaeology-survey` | `mode = "survey"` in `session.json` | None outside `.archaeology/` |
+| `/code-archaeology-excavate` | `mode = "excavate"` in `session.json` | None outside `.archaeology/patches/` |
+| `/code-archaeology-restore` | `mode = "restore"` in `session.json` | Yes, test-gated |
+
 ## Parameters
 
-| Parameter | Default | Description |
-| --- | --- | --- |
-| `repo_path` | `.` | Target repository to excavate. |
-| `language` | `typescript` | Primary language for tooling selection. |
-| `mode` | `survey` | `survey`, `excavate`, or `restore`. |
-| `strict_mode` | `false` | When true, restore may also apply medium-confidence findings. |
-| `test_command` | `npm test` | Test command run by verification hooks. |
-| `typecheck_command` | `npx tsc --noEmit` | Type-check command run by verification hooks. |
-| `branch_name` | `refactor/archaeology` | Branch used for isolated restore work. |
+| Parameter | Default | Description | Hermes Notes |
+| --- | --- | --- | --- |
+| `repo_path` | `.` | Target repository to excavate. | Set in `session.json` before first cron run. |
+| `language` | `typescript` | Primary language for tooling selection. | Same |
+| `mode` | `survey` | `survey`, `excavate`, or `restore`. | Change in `session.json` to switch modes. |
+| `strict_mode` | `false` | When true, restore may also apply medium-confidence findings. | Same |
+| `test_command` | `npm test` | Test command run by verification hooks. | Same |
+| `typecheck_command` | `npx tsc --noEmit` | Type-check command run by verification hooks. | Same |
+| `branch_name` | `refactor/archaeology` | Branch used for isolated restore work. | Same |
 
 ## Expedition Order
 
@@ -197,12 +249,15 @@ Code-Archaeology/
 |-- dist/               # Built package output for GitHub-based installs
 |-- docs/               # Public docs and release notes
 |-- hooks/opencode/     # Init, verification, revert, and status hooks
+|-- hooks/hermes/       # Setup and runner hooks for Hermes Agent
 |-- plugins/            # OpenCode plugin entry point
 |-- prompts/            # Expedition prompts by phase
 |-- schema/             # JSON schemas for reports
-|-- skills/             # Code Archaeology skill definition
+|-- skills/             # Code Archaeology skill definitions
+|   |-- code-archaeology/   # OpenCode skill
+|   `-- hermes/             # Hermes Agent skill and integration docs
 |-- src/                # TypeScript source
-|-- INSTALL.md          # OpenCode install handoff
+|-- INSTALL.md          # Multi-runtime install handoff
 |-- README.md           # Public project overview
 `-- AGENTS.md           # Agent runtime guide
 ```
@@ -219,6 +274,7 @@ All expedition state is written to `.archaeology/` inside the target repository:
 | `FINAL_CATALOG.md` | Final excavation summary and recommendations. |
 | `excavation_log.txt` | `git diff --stat` for applied restoration work. |
 | `patches/` | Mock patches generated by `excavate` mode. |
+| `hermes-runtime.json` | Hermes runtime configuration (Hermes only). |
 
 ## Local Testing
 
@@ -230,19 +286,24 @@ npm run build
 npm run typecheck
 npm pack --json --dry-run
 bash -n hooks/opencode/*.sh
+bash -n hooks/hermes/*.sh
 ```
 
-For a restore expedition, run the configured test and type-check commands between phases. The bundled verification hook is:
+For a restore expedition, run the configured test and type-check commands between phases. The bundled verification hooks are:
 
 ```bash
+# OpenCode
 bash hooks/opencode/verify-phase.sh final_verify
+
+# Hermes
+bash hooks/hermes/runner.sh
 ```
 
 ## Release Docs
 
 - [`docs/README.md`](docs/README.md) is the documentation landing page.
 - [`docs/RELEASE.md`](docs/RELEASE.md) covers release preparation and publishing.
-- [`INSTALL.md`](INSTALL.md) is the raw handoff for OpenCode installation.
+- [`INSTALL.md`](INSTALL.md) is the raw handoff for multi-runtime installation.
 - [GitHub Releases](https://github.com/Maleick/Code-Archaeology/releases) lists published versions.
 
 ## License
