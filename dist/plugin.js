@@ -1,2 +1,2 @@
-export { id, repoRoot, version, server, } from "./index.js";
+export { codeArchaeologyPlugin as default } from "./runtime.js";
 //# sourceMappingURL=plugin.js.map
