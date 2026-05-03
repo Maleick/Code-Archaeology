@@ -1,111 +1,168 @@
-# Code Archaeology
+<h1 align="center">Code Archaeology</h1>
 
-[![GitHub Release](https://img.shields.io/github/v/release/Maleick/Code-Archaeology)](https://github.com/Maleick/Code-Archaeology/releases)
+<p align="center">
+  <img src="assets/code-archaeology-banner.svg" alt="Code Archaeology OpenCode plugin banner" width="900">
+</p>
 
-A systematic excavation plugin for OpenCode. Removes accumulated sediment from a codebase—dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop—to restore the original architecture.
+<p align="center">
+  <a href="https://github.com/Maleick/Code-Archaeology/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/Maleick/Code-Archaeology?style=flat-square"></a>
+  <a href="https://github.com/Maleick/Code-Archaeology/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/Maleick/Code-Archaeology?style=flat-square"></a>
+  <a href="https://github.com/Maleick/Code-Archaeology/releases"><img alt="GitHub release" src="https://img.shields.io/github/v/release/Maleick/Code-Archaeology?style=flat-square"></a>
+  <a href="https://www.npmjs.com/package/opencode-code-archaeology"><img alt="npm version" src="https://img.shields.io/npm/v/opencode-code-archaeology?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/Maleick/Code-Archaeology?style=flat-square"></a>
+  <a href="docs/README.md"><img alt="Docs" src="https://img.shields.io/badge/docs-open-blue?style=flat-square"></a>
+  <a href="https://github.com/sponsors/Maleick"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-Maleick-fafbfc?style=flat-square&logo=github-sponsors"></a>
+</p>
 
-## ⚠️ Site Safety
+<p align="center">
+  <a href="#installation">Install</a> |
+  <a href="docs/README.md">Docs</a> |
+  <a href="https://github.com/Maleick/Code-Archaeology/wiki">Wiki</a> |
+  <a href="#commands">Commands</a> |
+  <a href="#safety-model">Safety</a> |
+  <a href="#release-docs">Release</a>
+</p>
 
-This plugin modifies code. By default it runs in **survey** mode, producing site reports only. Review these before switching to `restore` mode.
+Code Archaeology is an OpenCode plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order.
 
-## Prerequisites
+```text
++---------------------------------------------------------------+
+| CODE ARCHAEOLOGY CAPABILITY PANEL                             |
++-------------------+-------------------------------------------+
+| Default mode       | survey: reports only, zero source edits   |
+| Review mode        | excavate: reports plus mock patches       |
+| Restore mode       | applies approved changes with test gates  |
+| Local state        | .archaeology/ runtime artifacts           |
+| Runtime            | OpenCode plugin inside the target repo    |
+| Expedition order   | fixed stratigraphy from survey to catalog |
++-------------------+-------------------------------------------+
+```
 
-- Git repo with clean working tree
-- Passing test suite (even if minimal)
-- Type checker / linter installed
-- `opencode` CLI available
+## What It Does
+
+Code Archaeology runs a systematic excavation of a repository before it changes code. It inventories the site, identifies technical debt strata, writes reviewable reports, and only applies approved changes in `restore` mode.
+
+- Catalogs dead code, unused exports, unreachable functions, and stale artifacts.
+- Removes legacy fallbacks, deprecated shims, and compatibility layers after review.
+- Maps circular dependencies before extraction or type consolidation work.
+- Consolidates duplicate type definitions only after dead code and legacy layers are removed.
+- Hardens weak types without guessing uncertain replacements.
+- Finds semantic duplication and error-handling slop while preserving I/O boundaries.
+- Produces `.archaeology/` reports that stay local to the working repository.
 
 ## Installation
 
-### For OpenCode Users (Recommended)
+For OpenCode, paste this handoff into your agent:
 
-Add to your OpenCode plugin configuration (`~/.config/opencode/package.json`):
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
+```
+
+Recommended plugin install in `opencode.json`:
 
 ```json
 {
-  "dependencies": {
-    "opencode-code-archaeology": "github:Maleick/Code-Archaeology#main"
-  }
+  "plugin": [
+    "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git"
+  ]
 }
 ```
 
-Then run:
+Global npm install path:
 
 ```bash
-bun install
+npm install -g opencode-code-archaeology
+opencode-code-archaeology install
+opencode-code-archaeology doctor
+opencode-code-archaeology version
 ```
 
-OpenCode will automatically load the plugin on next start.
-
-### Manual / Development
+One-time package runner path, if your OpenCode setup supports package execution through Bun:
 
 ```bash
-# Clone and link for local development
-git clone https://github.com/Maleick/Code-Archaeology.git
-cd Code-Archaeology
-npm install
-npm link
+bunx opencode-code-archaeology install
+bunx opencode-code-archaeology doctor
 ```
 
-### Auto-Update
+See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and troubleshooting.
 
-This plugin supports automatic updates via `bun update`:
+## Quick Start
 
-- **Source of truth**: The `main` branch on GitHub (not npm or GitHub Releases)
-- **Update mechanism**: A daily `bun update` job pulls the latest commit from `main`
-- **Cache location**: `~/.cache/opencode/packages/opencode-code-archaeology/`
+Run the command family from inside the repository you want to inspect:
 
-**To verify your installed version:**
-
-```bash
-cat ~/.config/opencode/node_modules/opencode-code-archaeology/package.json | grep version
+```text
+/code-archaeology
 ```
 
-This should match the latest commit on `main` and the version shown in this repository's `package.json`.
+Start non-destructively, review the reports, then choose whether to generate mock patches or apply approved changes:
 
-**Note for maintainers:** When releasing, always bump `package.json` version and commit to `main`. GitHub Releases are for discoverability and changelogs only; the `main` branch is what consumers actually receive.
-
-## Usage
-
-```bash
-# 1. Survey — catalog artifacts, zero changes
-opencode run code-archaeology --mode survey
-
-# 2. Review reports in .archaeology/
-cat .archaeology/expedition1-report.md
-# ... etc
-
-# 3. Restore high-confidence findings only
-opencode run code-archaeology --mode restore --strict_mode false
-
-# 4. Or restore medium+high confidence
-opencode run code-archaeology --mode restore --strict_mode true
+```text
+/code-archaeology-survey
+/code-archaeology-excavate
+/code-archaeology-restore
 ```
+
+## Expedition Flow
+
+```mermaid
+flowchart TD
+  A[Start /code-archaeology] --> B[Site Survey and Baseline]
+  B --> C[Dead Code Excavation]
+  C --> D[Legacy Stratum Removal]
+  D --> E[Circular Dependency Cartography]
+  E --> F[Type Catalog Consolidation]
+  F --> G[Type Restoration and Hardening]
+  G --> H[DRY Stratification]
+  H --> I[Error Handling Stratigraphy]
+  I --> J[Artifact Cleaning and Documentation]
+  J --> K[Site Preservation and Final Catalog]
+```
+
+## Safety Model
+
+```mermaid
+flowchart LR
+  Survey[survey mode] --> Reports[write site reports]
+  Reports --> Review[human review]
+  Review --> Excavate[excavate mode: mock patches]
+  Review --> Restore[restore mode: approved changes]
+  Restore --> Verify[verify phase]
+  Verify -->|pass| Next[next expedition]
+  Verify -->|fail| Revert[revert phase and stop]
+```
+
+- `survey` is the default and writes reports only.
+- `restore` modifies code and should run only after reports are reviewed.
+- `.archaeology/` is local runtime state and should not be committed.
+- Work is isolated to a configurable branch, `refactor/archaeology` by default.
+- Tests and type checks gate each restore phase.
+- Failed restore phases are reverted before the next expedition can proceed.
+- Try/catch blocks around I/O and external input boundaries are never removed automatically.
+
+## Commands
+
+| Command | Purpose | File changes |
+| --- | --- | --- |
+| `/code-archaeology` | Start the full expedition in the configured mode. | Depends on mode; defaults to none. |
+| `/code-archaeology-survey` | Generate site reports for review. | None outside `.archaeology/`. |
+| `/code-archaeology-excavate` | Generate reports and mock patches. | None outside `.archaeology/patches/`. |
+| `/code-archaeology-restore` | Apply approved high-confidence changes. | Yes, test-gated. |
 
 ## Parameters
 
 | Parameter | Default | Description |
-|-----------|---------|-------------|
-| `repo_path` | `.` | Target repository |
-| `language` | `typescript` | Primary language |
-| `mode` | `survey` | `survey`, `excavate`, or `restore` |
-| `strict_mode` | `false` | Auto-restore medium-confidence findings |
-| `test_command` | `npm test` | Test runner command |
-| `typecheck_command` | `npx tsc --noEmit` | Type check command |
-| `branch_name` | `refactor/archaeology` | Git branch to create |
+| --- | --- | --- |
+| `repo_path` | `.` | Target repository to excavate. |
+| `language` | `typescript` | Primary language for tooling selection. |
+| `mode` | `survey` | `survey`, `excavate`, or `restore`. |
+| `strict_mode` | `false` | When true, restore may also apply medium-confidence findings. |
+| `test_command` | `npm test` | Test command run by verification hooks. |
+| `typecheck_command` | `npx tsc --noEmit` | Type-check command run by verification hooks. |
+| `branch_name` | `refactor/archaeology` | Branch used for isolated restore work. |
 
-## Output Artifacts
+## Expedition Order
 
-All artifacts are written to `.archaeology/`:
-
-- `site_survey.md` — baseline inventory and stratum graph
-- `expedition1-report.md` through `expedition8-report.md` — per-expedition findings
-- `FINAL_CATALOG.md` — completed excavation metrics and recommendations
-- `excavation_log.txt` — `git diff --stat`
-
-## Expedition Order (Fixed)
-
-The expeditions MUST run in this order due to stratigraphic dependencies:
+The expedition order is fixed because each layer depends on the previous excavation:
 
 1. Site Survey & Baseline
 2. Dead Code Excavation
@@ -118,51 +175,77 @@ The expeditions MUST run in this order due to stratigraphic dependencies:
 9. Artifact Cleaning & Documentation
 10. Site Preservation & Final Catalog
 
-**Why this order?** You cannot consolidate types before removing dead code (you might catalog code that should be discarded). You cannot DRY before untangling cycles (abstractions over cyclic deps create worse stratification).
+Do not consolidate types before dead code and legacy removal. Do not DRY code before dependency cycles are mapped.
 
-## Language-Specific Tooling
+## Language Tooling
 
 | Language | Dead Code | Dependencies | Types | DRY |
-|----------|-----------|--------------|-------|-----|
-| TypeScript | `knip`, `unimported` | `madge` | `tsc` | `jscpd` |
-| JavaScript | `knip`, `depcheck` | `madge` | N/A | `jscpd` |
+| --- | --- | --- | --- | --- |
+| TypeScript | `knip` | `madge` | `tsc` | `jscpd` |
+| JavaScript | `knip` | `madge` | N/A | `jscpd` |
 | Python | `vulture` | `pydeps` | `mypy` | `pylint` |
-| Go | `deadcode`, `staticcheck` | `godepgraph` | `go vet` | `golangci-lint` |
-| Rust | `cargo-udeps`, `rustc` | `cargo-deps` | `rustc` | `clippy` |
+| Go | `deadcode` | `godepgraph` | `go vet` | `golangci-lint` |
+| Rust | `cargo-udeps` | `cargo-deps` | `rustc` | `clippy` |
 
-If tools are missing, the skill falls back to AST-based manual analysis.
+If a preferred tool is missing, Code Archaeology falls back to AST-based manual analysis and flags uncertain findings for human review.
 
 ## Architecture
 
-```
+```text
 Code-Archaeology/
-├── src/              # TypeScript source (plugin entry, types)
-├── plugins/          # OpenCode plugin entry point
-├── skills/           # Agent skill definitions (SKILL.md)
-├── commands/         # CLI command documentation
-├── hooks/            # Shell scripts for expedition workflow
-├── prompts/          # Detailed expedition prompts
-├── schema/           # JSON schemas for reports
-├── AGENTS.md         # Agent runtime guide
-└── README.md         # This file
+|-- assets/             # README and repository visual assets
+|-- commands/           # OpenCode slash command definitions
+|-- dist/               # Built package output for GitHub-based installs
+|-- docs/               # Public docs and release notes
+|-- hooks/opencode/     # Init, verification, revert, and status hooks
+|-- plugins/            # OpenCode plugin entry point
+|-- prompts/            # Expedition prompts by phase
+|-- schema/             # JSON schemas for reports
+|-- skills/             # Code Archaeology skill definition
+|-- src/                # TypeScript source
+|-- INSTALL.md          # OpenCode install handoff
+|-- README.md           # Public project overview
+`-- AGENTS.md           # Agent runtime guide
 ```
 
-## Development
+## Runtime Artifacts
+
+All expedition state is written to `.archaeology/` inside the target repository:
+
+| Artifact | Purpose |
+| --- | --- |
+| `session.json` | Current expedition progress and configuration. |
+| `site_survey.md` | Baseline inventory and stratum graph. |
+| `expedition1-report.md` through `expedition8-report.md` | Per-expedition findings. |
+| `FINAL_CATALOG.md` | Final excavation summary and recommendations. |
+| `excavation_log.txt` | `git diff --stat` for applied restoration work. |
+| `patches/` | Mock patches generated by `excavate` mode. |
+
+## Local Testing
+
+For plugin development:
 
 ```bash
-# Install dependencies
 npm install
-
-# Build
 npm run build
-
-# Type check
 npm run typecheck
-
-# Verify package
-npm run verify:pack
+npm pack --json --dry-run
+bash -n hooks/opencode/*.sh
 ```
+
+For a restore expedition, run the configured test and type-check commands between phases. The bundled verification hook is:
+
+```bash
+bash hooks/opencode/verify-phase.sh final_verify
+```
+
+## Release Docs
+
+- [`docs/README.md`](docs/README.md) is the documentation landing page.
+- [`docs/RELEASE.md`](docs/RELEASE.md) covers release preparation and publishing.
+- [`INSTALL.md`](INSTALL.md) is the raw handoff for OpenCode installation.
+- [GitHub Releases](https://github.com/Maleick/Code-Archaeology/releases) lists published versions.
 
 ## License
 
-MIT
+MIT. See [`LICENSE`](LICENSE).

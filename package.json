@@ -1,10 +1,13 @@
 {
   "name": "opencode-code-archaeology",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Excavate, catalog, and restore a codebase by removing accumulated sediment—dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "opencode-code-archaeology": "dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,15 +24,28 @@
     "commands",
     "skills",
     "plugins",
-    "policies",
+    "prompts",
     "schema",
+    "docs/README.md",
+    "docs/INSTALL.md",
+    "docs/ARCHITECTURE.md",
+    "docs/RELEASE.md",
+    "docs/SECURITY_AUDIT.md",
+    "wiki",
+    "assets",
+    ".github",
     "AGENTS.md",
     "VERSION",
     "README.md",
+    "INSTALL.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "verify:pack": "bash hooks/opencode/verify-package.sh",
     "prepack": "tsc"
@@ -47,14 +63,18 @@
     "type": "git",
     "url": "git+https://github.com/Maleick/Code-Archaeology.git"
   },
-  "homepage": "https://github.com/Maleick/Code-Archaeology",
+  "author": {
+    "name": "Maleick",
+    "url": "https://github.com/Maleick"
+  },
+  "homepage": "https://github.com/Maleick/Code-Archaeology#readme",
   "bugs": {
     "url": "https://github.com/Maleick/Code-Archaeology/issues"
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
   },
   "engines": {
     "node": ">=18"

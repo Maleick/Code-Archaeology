@@ -23,6 +23,7 @@ coverage/
 
 # Local state
 .archaeology/
+.superpowers/
 
 # Worktrees
 .worktrees/

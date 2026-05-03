@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300" role="img" aria-labelledby="title desc">
+  <title id="title">Code Archaeology OpenCode Plugin</title>
+  <desc id="desc">Dark archaeology themed banner for the Code Archaeology OpenCode plugin.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071018"/>
+      <stop offset="0.48" stop-color="#111827"/>
+      <stop offset="1" stop-color="#2a1809"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c0843f"/>
+      <stop offset="0.5" stop-color="#e0b15b"/>
+      <stop offset="1" stop-color="#8b5a2b"/>
+    </linearGradient>
+    <linearGradient id="tablet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#334155"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="900" height="300" fill="url(#bg)"/>
+  <path d="M0 222 C120 198 214 236 322 213 C452 186 549 216 672 194 C764 178 827 190 900 171 L900 300 L0 300 Z" fill="#20140b" opacity="0.92"/>
+  <path d="M0 244 C152 214 244 266 386 231 C505 202 626 242 744 210 C806 193 852 201 900 189 L900 300 L0 300 Z" fill="#2f1d0f"/>
+  <path d="M0 268 C138 246 267 281 405 258 C523 238 650 270 770 244 C827 232 865 232 900 222 L900 300 L0 300 Z" fill="url(#sand)" opacity="0.82"/>
+
+  <g opacity="0.35" stroke="#e0b15b" stroke-width="1" fill="none">
+    <path d="M41 96 H312"/>
+    <path d="M586 66 H852"/>
+    <path d="M640 103 H828"/>
+    <path d="M68 128 H242"/>
+  </g>
+
+  <g transform="translate(78 58)">
+    <path d="M74 8 L141 34 L116 146 L22 146 L0 35 Z" fill="url(#tablet)" stroke="#64748b" stroke-width="3"/>
+    <path d="M28 48 H103 M31 75 H111 M36 102 H91" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round" opacity="0.72"/>
+    <path d="M95 138 L136 179" stroke="#d6a23f" stroke-width="12" stroke-linecap="round"/>
+    <path d="M126 169 L169 126" stroke="#d6a23f" stroke-width="12" stroke-linecap="round"/>
+    <path d="M138 120 C154 103 182 104 198 120 L169 149 Z" fill="#111827" stroke="#f6c453" stroke-width="6"/>
+    <circle cx="71" cy="31" r="9" fill="#f6c453" filter="url(#glow)"/>
+  </g>
+
+  <g transform="translate(300 70)">
+    <text x="0" y="43" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="46" font-weight="800" fill="#f8fafc" letter-spacing="1">Code Archaeology</text>
+    <text x="2" y="83" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="600" fill="#f6c453">OpenCode plugin for systematic codebase excavation</text>
+    <text x="2" y="122" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="15" fill="#cbd5e1">survey - excavate - restore - verify</text>
+    <g transform="translate(0 145)" font-family="SFMono-Regular, Consolas, Liberation Mono, monospace" font-size="13" fill="#94a3b8">
+      <rect x="0" y="0" width="455" height="42" rx="10" fill="#020617" opacity="0.72" stroke="#334155"/>
+      <text x="18" y="26">dead code | legacy | cycles | types | DRY | errors</text>
+    </g>
+  </g>
+
+  <g opacity="0.55" fill="#f6c453">
+    <circle cx="807" cy="54" r="2"/>
+    <circle cx="846" cy="93" r="1.8"/>
+    <circle cx="758" cy="120" r="1.5"/>
+    <circle cx="63" cy="39" r="1.5"/>
+    <circle cx="219" cy="48" r="2"/>
+  </g>
+</svg>

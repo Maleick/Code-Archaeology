@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest an improvement for the Code Archaeology OpenCode plugin.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: Please focus on the user workflow and safety impact. Do not include private repository contents.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow or limitation should this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should Code Archaeology do differently?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - survey reporting
+        - excavate mock patches
+        - restore safety
+        - language support
+        - CLI or install
+        - documentation
+        - CI or release
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workaround or simpler approach?
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety considerations
+      description: Could this modify user code, expose local state, or affect restore behavior?
