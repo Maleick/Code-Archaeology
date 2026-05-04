@@ -7,6 +7,20 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ARCHAEOLOGY_DIR="$REPO_ROOT/.archaeology"
 SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
 
+mkdir -p "$ARCHAEOLOGY_DIR"
+
+block_session() {
+  local reason="$1"
+  local message="${2:-$reason}"
+  echo "ERROR: $message" >&2
+  if command -v jq >/dev/null 2>&1 && [[ -f "$SESSION_FILE" ]]; then
+    jq --arg reason "$reason" \
+      '.status = "blocked" | .flags = (.flags // {}) | .flags.blocked_reason = $reason' \
+      "$SESSION_FILE" > "$SESSION_FILE.tmp" && mv "$SESSION_FILE.tmp" "$SESSION_FILE"
+  fi
+  exit 1
+}
+
 # Phase definitions (fixed order)
 PHASES=(
   "site-survey"
@@ -51,12 +65,18 @@ fi
 
 # Find phase index
 phase_idx=0
+phase_found=false
 for i in "${!PHASES[@]}"; do
   if [[ "${PHASES[$i]}" == "$current_phase" ]]; then
     phase_idx=$i
+    phase_found=true
     break
   fi
 done
+
+if [[ "$phase_found" != true ]]; then
+  block_session "unknown phase: $current_phase" "Unknown Hermes phase: $current_phase"
+fi
 
 phase_number=$((phase_idx + 1))
 total_phases=${#PHASES[@]}

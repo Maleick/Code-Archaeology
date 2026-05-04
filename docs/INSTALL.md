@@ -1,6 +1,6 @@
 # Install Code Archaeology
 
-This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recommended OpenCode plugin configuration plus the npm CLI install path.
+This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recommended OpenCode plugin configuration, npm CLI install path, and Hermes Agent setup.
 
 ## Prerequisites
 
@@ -8,6 +8,7 @@ This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recomme
 - Node.js 18 or newer with npm.
 - Git installed and available in your shell.
 - A target repository with tests or type checks before running `restore` mode.
+- For Hermes: Hermes Agent CLI or an active Hermes session.
 
 ## Recommended OpenCode Plugin Install
 
@@ -47,6 +48,28 @@ Then restart OpenCode and run:
 /code-archaeology-survey
 ```
 
+## Hermes Setup
+
+Install the CLI globally, then initialize Hermes runtime metadata from the package or local clone:
+
+```bash
+npm install -g opencode-code-archaeology
+cd ~/projects/Code-Archaeology
+bash hooks/hermes/setup.sh
+```
+
+Create a cronjob that runs exactly one expedition phase per invocation:
+
+```bash
+hermes cronjob create \
+  --name "code-archaeology-expedition" \
+  --schedule "every 15m" \
+  --workdir ~/projects/Code-Archaeology \
+  --prompt "Run one Code Archaeology expedition phase. Read .archaeology/session.json, execute current phase with verification, advance to next phase."
+```
+
+See [`skills/hermes/INTEGRATION.md`](../skills/hermes/INTEGRATION.md) for the full Hermes workflow.
+
 ## Verification
 
 Confirm the published package and local CLI are visible:
@@ -65,6 +88,7 @@ npm install
 npm run build
 npm run typecheck
 bash -n hooks/opencode/*.sh
+bash -n hooks/hermes/*.sh
 ```
 
 To verify plugin behavior, restart OpenCode in a Git repository and run:
@@ -101,6 +125,19 @@ opencode-code-archaeology doctor
 - Restart OpenCode so it reloads plugin commands.
 - Confirm the npm package installed with `npm list -g opencode-code-archaeology --depth=0` if using the global path.
 - Run `/code-archaeology-survey` from inside a Git repository.
+
+### Cron Not Running
+
+```bash
+hermes cronjob list
+hermes cronjob log code-archaeology-expedition
+```
+
+### Phase Blocked
+
+```bash
+cat .archaeology/session.json | jq '.flags.blocked_reason'
+```
 
 ### Stale Cache
 
