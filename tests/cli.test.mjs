@@ -62,6 +62,18 @@ test("install creates opencode config with plugin entry", async () => {
   }
 });
 
+test("install creates opencode config with skills path", async () => {
+  const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
+  try {
+    await runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } });
+
+    const config = JSON.parse(await readFile(join(configDir, "opencode.json"), "utf8"));
+    assert.deepEqual(config.skills.paths, [join(root, "skills")]);
+  } finally {
+    await rm(configDir, { recursive: true, force: true });
+  }
+});
+
 test("install preserves fields and existing plugin entries", async () => {
   const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
   try {
@@ -78,6 +90,24 @@ test("install preserves fields and existing plugin entries", async () => {
       "existing-plugin",
       "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git",
     ]);
+  } finally {
+    await rm(configDir, { recursive: true, force: true });
+  }
+});
+
+test("install preserves existing skill paths", async () => {
+  const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
+  try {
+    const existingPath = join(tmpdir(), "existing-skills");
+    await writeFile(
+      join(configDir, "opencode.json"),
+      `${JSON.stringify({ skills: { paths: [existingPath] } }, null, 2)}\n`,
+    );
+
+    await runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } });
+
+    const config = JSON.parse(await readFile(join(configDir, "opencode.json"), "utf8"));
+    assert.deepEqual(config.skills.paths, [existingPath, join(root, "skills")]);
   } finally {
     await rm(configDir, { recursive: true, force: true });
   }

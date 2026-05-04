@@ -1,6 +1,6 @@
 # Release Process
 
-This checklist is for future `opencode-code-archaeology` releases. `v2.0.2` is the current release example; replace it with the next version when preparing a new release.
+This checklist is for future `opencode-code-archaeology` releases. `v2.1.0` is the current release example; replace it with the next version when preparing a new release.
 
 ## 1. Preflight
 
@@ -12,23 +12,23 @@ This checklist is for future `opencode-code-archaeology` releases. `v2.0.2` is t
 
 ## 2. Version Bump
 
-For a future release, replace `2.0.2` with the target version:
+For a future release, replace `2.1.0` with the target version:
 
 ```bash
-npm version 2.0.2 --no-git-tag-version
+npm version 2.1.0 --no-git-tag-version
 ```
 
 Update `VERSION` to the same value:
 
 ```text
-2.0.2
+2.1.0
 ```
 
 Confirm `package.json`, `package-lock.json`, and `VERSION` agree.
 
 ## 3. Changelog
 
-- Add a `v2.0.2` entry, or the future target version, to `CHANGELOG.md`.
+- Add a `v2.1.0` entry, or the future target version, to `CHANGELOG.md`.
 - Include user-visible changes, safety notes, and any migration instructions.
 - Keep the release notes factual and avoid claiming publication steps that have not happened yet.
 
@@ -87,10 +87,10 @@ Only perform these steps after verification passes and after confirming the bran
 ```bash
 git status --short
 git add README.md INSTALL.md docs wiki assets .github SECURITY.md CONTRIBUTING.md CHANGELOG.md package.json package-lock.json VERSION .gitignore
-git commit -m "chore: prepare v2.0.2 release"
-git tag v2.0.2
+git commit -m "chore: prepare v2.1.0 release"
+git tag v2.1.0
 git push origin HEAD
-git push origin v2.0.2
+git push origin v2.1.0
 ```
 
 For a future release, use the future version in the commit message and tag.
@@ -100,7 +100,7 @@ For a future release, use the future version in the commit message and tag.
 Create the GitHub release from the matching tag:
 
 ```bash
-gh release create v2.0.2 --title "v2.0.2" --notes-file CHANGELOG.md
+gh release create v2.1.0 --title "v2.1.0" --notes-file CHANGELOG.md
 ```
 
 Before publishing, trim the notes to the specific version section if `CHANGELOG.md` contains multiple releases.
@@ -122,7 +122,7 @@ Confirm the public release surfaces report the expected version:
 ```bash
 npm view opencode-code-archaeology version
 npm view opencode-code-archaeology dist-tags
-gh release view v2.0.2
+gh release view v2.1.0
 ```
 
 Optionally verify a fresh install path:

@@ -112,7 +112,7 @@ Run the command family from inside the repository you want to inspect:
 /code-archaeology
 ```
 
-Start non-destructively, review the reports, then choose whether to generate mock patches or apply approved changes:
+`/code-archaeology` runs the full 10-phase survey chain without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Review the reports, then choose whether to generate mock patches or apply approved changes:
 
 ```text
 /code-archaeology-survey
@@ -185,7 +185,7 @@ flowchart LR
 
 | Command | Purpose | File changes |
 | --- | --- | --- |
-| `/code-archaeology` | Start the full expedition in the configured mode. | Depends on mode; defaults to none. |
+| `/code-archaeology` | Run the full 10-phase survey chain without per-phase prompts. | None outside `.archaeology/`. |
 | `/code-archaeology-survey` | Generate site reports for review. | None outside `.archaeology/`. |
 | `/code-archaeology-excavate` | Generate reports and mock patches. | None outside `.archaeology/patches/`. |
 | `/code-archaeology-restore` | Apply approved high-confidence changes. | Yes, test-gated. |

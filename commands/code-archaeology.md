@@ -13,6 +13,8 @@ trigger:
 
 Excavate, catalog, and restore a codebase by removing accumulated sediment: dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop. Produces human-reviewable site reports before any artifacts are disturbed. Non-destructive by default.
 
+By default, `/code-archaeology` runs the full 10-phase survey chain without stopping for a prompt between phases. It generates the complete report set in `.archaeology/` and makes zero source-code changes. To apply changes after review, use `/code-archaeology-restore` explicitly.
+
 ## Quick Start
 
 ```
@@ -36,7 +38,7 @@ Run: /code-archaeology
 
 | Command | Description |
 |---------|-------------|
-| `/code-archaeology` | Start full expedition (default: survey mode) |
+| `/code-archaeology` | Run the full 10-phase survey chain without per-phase prompts |
 | `/code-archaeology-survey` | Site survey only — zero file changes |
 | `/code-archaeology-excavate` | Generate reports + mock patches for review |
 | `/code-archaeology-restore` | Execute approved changes after review |
@@ -62,9 +64,9 @@ Run: /code-archaeology
 
 ## Safety
 
-- **Survey mode (default)**: Zero file changes. Only reports generated.
+- **Survey mode (default)**: Zero file changes. Runs every phase and generates the full report set.
 - **Excavate mode**: Mock patches for human review. No actual modifications.
-- **Restore mode**: Applies approved changes. Always runs tests between phases.
+- **Restore mode**: Applies approved changes only when explicitly requested with `/code-archaeology-restore`. Always runs tests between phases.
 - **Branch isolation**: All work happens on `refactor/archaeology` (configurable).
 - **Test gating**: Any phase that breaks tests is automatically reverted.
 

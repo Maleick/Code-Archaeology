@@ -71,6 +71,8 @@ test("plugin config registers Code Archaeology command templates", async () => {
     "Run Code Archaeology in survey mode — catalog artifacts only, zero file changes",
   );
   assert.match(config.command["code-archaeology"].template, /Systematic Codebase Excavation/);
+  assert.match(config.command["code-archaeology"].template, /runs the full 10-phase survey chain/i);
+  assert.match(config.command["code-archaeology"].template, /use `\/code-archaeology-restore`/i);
 });
 
 test("legacy plugin shim remains default-only", async () => {

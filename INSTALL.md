@@ -43,6 +43,8 @@ Restart OpenCode after editing the configuration. The command family should then
 /code-archaeology-restore
 ```
 
+`/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
+
 ## Hermes Setup
 
 ### 1. Install Code Archaeology CLI
@@ -84,7 +86,7 @@ opencode-code-archaeology version
 Then restart OpenCode and run:
 
 ```text
-/code-archaeology-survey
+/code-archaeology
 ```
 
 ## One-Time Bun Path
@@ -121,10 +123,10 @@ bash -n hooks/hermes/*.sh
 To verify command availability, restart OpenCode in a Git repository and run:
 
 ```text
-/code-archaeology-survey
+/code-archaeology
 ```
 
-The survey should create `.archaeology/` reports without modifying source files.
+The default survey chain should create `.archaeology/` reports without modifying source files or asking to proceed phase by phase.
 
 ## Updating
 
@@ -150,7 +152,7 @@ npm list -g opencode-code-archaeology --depth=0
 
 - Restart OpenCode so it reloads plugin commands.
 - Confirm the package installed successfully with `npm list -g opencode-code-archaeology --depth=0` if using the global path.
-- Run `/code-archaeology-survey` from inside a Git repository, not from an empty directory.
+- Run `/code-archaeology` from inside a Git repository, not from an empty directory.
 
 ### Cron Not Running (Hermes)
 
@@ -177,7 +179,7 @@ jq '.status = "running" | del(.flags.blocked_reason)' .archaeology/session.json 
 
 ### Restore Safety
 
-- Start with `/code-archaeology-survey` (OpenCode) or `mode = "survey"` (Hermes); it writes reports only.
+- Start with `/code-archaeology` (OpenCode) or `mode = "survey"` (Hermes); it writes reports only.
 - Review `.archaeology/site_survey.md` and expedition reports before restore.
 - Use `/code-archaeology-excavate` (OpenCode) or `mode = "excavate"` (Hermes) for mock patches if you want another review gate.
 - Run `/code-archaeology-restore` (OpenCode) or `mode = "restore"` (Hermes) only when the target repository has tests or type checks available.

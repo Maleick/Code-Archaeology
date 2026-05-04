@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## v2.1.0
+
+- Changed `/code-archaeology` to run the full 10-phase survey chain by default without per-phase prompts.
+- Kept the default OpenCode flow non-destructive: survey mode writes report artifacts under `.archaeology/` only.
+- Clarified that `/code-archaeology-restore` remains the explicit command for applying source changes.
+- Updated command, CLI, plugin, and release tests for the new default survey-chain behavior.
+
+## v2.0.3
 
 - Hardened Hermes runner startup so clean repositories initialize `.archaeology/session.json` without requiring prior setup.
 - Added clear blocked-state handling for malformed Hermes session phases instead of allowing low-level `jq` failures.

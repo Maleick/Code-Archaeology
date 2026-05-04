@@ -30,7 +30,7 @@ Code-Archaeology/
 ### OpenCode Plugin Surfaces
 
 - `plugins/` exposes the plugin entry point consumed by OpenCode.
-- `commands/` defines the slash command family: `/code-archaeology`, `/code-archaeology-survey`, `/code-archaeology-excavate`, and `/code-archaeology-restore`.
+- `commands/` defines the slash command family: `/code-archaeology`, `/code-archaeology-survey`, `/code-archaeology-excavate`, and `/code-archaeology-restore`. The default `/code-archaeology` command runs the full survey chain without per-phase prompts and remains non-destructive.
 - `skills/code-archaeology/` contains the domain workflow instructions agents follow during an expedition.
 - `hooks/opencode/` provides shell gates for session setup, verification, rollback, and status updates.
 - `prompts/` and `schema/` provide phase-specific guidance and artifact structure.
@@ -45,7 +45,7 @@ Code-Archaeology/
 
 ## Commands, Skills, And Hooks
 
-Commands are the user-facing entry points. A command selects the mode and starts the archaeology workflow in the target repository.
+Commands are the user-facing entry points. `/code-archaeology` selects survey mode by default and runs all 10 phases to produce reports. The explicit restore command is required before source files are changed.
 
 The Code Archaeology skill defines the expedition order, safety constraints, language-tool preferences, and reporting expectations. It is the agent-facing control layer that prevents phases from running out of order.
 

@@ -2,7 +2,7 @@
 
 [Home](Home) | [Installation](Installation) | [Security](Security-and-Safety) | [Release](Release-Process)
 
-Code Archaeology runs phases in a fixed order so later changes are based on earlier evidence.
+Code Archaeology runs phases in a fixed order so later changes are based on earlier evidence. In OpenCode, `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts.
 
 1. Site Survey & Baseline
 2. Dead Code Excavation
@@ -22,6 +22,8 @@ Code Archaeology runs phases in a fixed order so later changes are based on earl
 | `survey` | Reports only; no source edits. |
 | `excavate` | Reports plus mock patches in `.archaeology/patches/`. |
 | `restore` | Applies approved changes with verification gates. |
+
+Use `/code-archaeology-restore` explicitly when you are ready to apply changes. The default `/code-archaeology` command remains survey-only and writes reports under `.archaeology/`.
 
 ## Local Artifacts
 

@@ -21,7 +21,7 @@ opencode-code-archaeology version
 Restart OpenCode inside a Git repository and run:
 
 ```text
-/code-archaeology-survey
+/code-archaeology
 ```
 
-Start with `survey`, review reports, then choose `excavate` for mock patches or `restore` for approved, test-gated changes.
+`/code-archaeology` runs the full 10-phase survey chain without per-phase prompts, writes `.archaeology/` reports only, and makes no source-code changes. Review reports, then choose `excavate` for mock patches or `restore` for approved, test-gated changes.

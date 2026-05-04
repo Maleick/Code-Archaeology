@@ -19,6 +19,7 @@ const REQUIRED_FILES = [
 ];
 const cliFile = fileURLToPath(import.meta.url);
 const root = dirname(dirname(cliFile));
+const skillsPath = join(root, "skills");
 function configPath() {
     const configDir = process.env.OPENCODE_CONFIG_DIR || join(process.env.HOME || ".", ".config", "opencode");
     return join(configDir, "opencode.json");
@@ -61,6 +62,13 @@ async function install() {
     const plugins = Array.isArray(config.plugin) ? config.plugin : [];
     if (!plugins.includes(PLUGIN)) {
         config.plugin = [...plugins, PLUGIN];
+    }
+    const skills = typeof config.skills === "object" && config.skills !== null ? config.skills : {};
+    const paths = Array.isArray(skills.paths)
+        ? skills.paths
+        : [];
+    if (!paths.includes(skillsPath)) {
+        config.skills = { ...skills, paths: [...paths, skillsPath] };
     }
     await mkdir(dirname(target), { recursive: true });
     let backup;

@@ -31,6 +31,8 @@ Restart OpenCode after editing the configuration. The command family should then
 /code-archaeology-restore
 ```
 
+`/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
+
 ## npm Global Install
 
 Use the npm package when you want the CLI installer and diagnostics:
@@ -45,7 +47,7 @@ opencode-code-archaeology version
 Then restart OpenCode and run:
 
 ```text
-/code-archaeology-survey
+/code-archaeology
 ```
 
 ## Hermes Setup
@@ -94,10 +96,10 @@ bash -n hooks/hermes/*.sh
 To verify plugin behavior, restart OpenCode in a Git repository and run:
 
 ```text
-/code-archaeology-survey
+/code-archaeology
 ```
 
-The survey should create `.archaeology/` reports without modifying source files.
+The default survey chain should create `.archaeology/` reports without modifying source files or asking to proceed phase by phase.
 
 ## Updating
 
@@ -124,7 +126,7 @@ opencode-code-archaeology doctor
 
 - Restart OpenCode so it reloads plugin commands.
 - Confirm the npm package installed with `npm list -g opencode-code-archaeology --depth=0` if using the global path.
-- Run `/code-archaeology-survey` from inside a Git repository.
+- Run `/code-archaeology` from inside a Git repository.
 
 ### Cron Not Running
 
@@ -147,7 +149,7 @@ cat .archaeology/session.json | jq '.flags.blocked_reason'
 
 ### Restore Safety
 
-- Start with `/code-archaeology-survey`; it writes reports only.
+- Start with `/code-archaeology`; it writes reports only.
 - Review `.archaeology/site_survey.md` and expedition reports before restore.
 - Use `/code-archaeology-excavate` for mock patches if you want another review gate.
 - Run `/code-archaeology-restore` only when the target repository has tests or type checks available.

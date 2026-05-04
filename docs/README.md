@@ -33,11 +33,13 @@ Or tell OpenCode:
 Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
 ```
 
-Restart OpenCode in the repository you want to inspect and start with the non-destructive survey command:
+Restart OpenCode in the repository you want to inspect and start with the non-destructive default command:
 
 ```text
-/code-archaeology-survey
+/code-archaeology
 ```
+
+This runs the full 10-phase survey chain without per-phase prompts, writes reports under `.archaeology/`, and makes no source-code changes.
 
 Review `.archaeology/site_survey.md` and expedition reports before using:
 
@@ -65,6 +67,6 @@ Each cron run executes exactly **one** phase. Ten phases complete in ~2.5 hours 
 
 ## Safety Warning
 
-`survey` mode writes reports only. `excavate` mode writes reports and mock patches. `restore` mode can edit source files and should only run after report review, on an isolated branch, with tests or type checks available.
+`/code-archaeology` defaults to survey mode and writes reports only. `excavate` mode writes reports and mock patches. `restore` mode can edit source files and should only run after report review, on an isolated branch, with tests or type checks available.
 
 Do not commit `.archaeology/`; it is local runtime state.
