@@ -50,7 +50,7 @@ Then restart OpenCode and run:
 
 ## Hermes Setup
 
-Install the CLI globally, then initialize Hermes runtime metadata from the package or local clone:
+Install the CLI globally so Hermes can invoke Code Archaeology commands. To initialize Hermes runtime metadata, run the hook from a local clone or from the unpacked package contents:
 
 ```bash
 npm install -g opencode-code-archaeology

@@ -61,3 +61,21 @@ test("Hermes runner blocks malformed session state instead of advancing", async 
     await rm(repo, { recursive: true, force: true });
   }
 });
+
+test("Hermes runner blocks invalid session JSON without overwriting it", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const sessionPath = join(repo, ".archaeology", "session.json");
+    await writeFile(sessionPath, "{ invalid json\n");
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], { cwd: repo }),
+      /Invalid Hermes session file/,
+    );
+
+    assert.equal(await readFile(sessionPath, "utf8"), "{ invalid json\n");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
