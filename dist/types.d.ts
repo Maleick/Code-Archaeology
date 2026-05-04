@@ -15,7 +15,7 @@ export type ConfidenceLevel = "HIGH" | "MEDIUM" | "LOW";
 /** Status values for expedition progress. */
 export type ExpeditionStatus = "pending" | "running" | "complete" | "failed" | "skipped";
 /** Tool types used for analysis. */
-export type AnalysisTool = "knip" | "vulture" | "madge" | "pydeps" | "jscpd" | "tsc" | "mypy" | "ast_grep" | "manual";
+export type AnalysisTool = "knip" | "unimported" | "depcheck" | "vulture" | "deadcode" | "staticcheck" | "cargo-udeps" | "rustc" | "madge" | "pydeps" | "godepgraph" | "cargo-deps" | "jscpd" | "tsc" | "mypy" | "go vet" | "pylint" | "golangci-lint" | "clippy" | "ast_grep" | "manual";
 /** Event types emitted by the plugin. */
 export type EventType = "phase_complete" | "phase_failed" | "finding_detected" | "report_generated";
 /** Runtime parameters for an archaeology session. */

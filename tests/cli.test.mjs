@@ -40,6 +40,9 @@ test("doctor reports core package files present", async () => {
   assert.match(stdout, /skills\/code-archaeology\/SKILL\.md/);
   assert.match(stdout, /hooks\/opencode\/init\.sh/);
   assert.match(stdout, /hooks\/opencode\/verify-phase\.sh/);
+  assert.match(stdout, /hooks\/hermes\/setup\.sh/);
+  assert.match(stdout, /hooks\/hermes\/runner\.sh/);
+  assert.match(stdout, /skills\/hermes\/INTEGRATION\.md/);
   assert.match(stdout, /AGENTS\.md/);
   assert.match(stdout, /README\.md/);
   assert.match(stdout, /INSTALL\.md/);
