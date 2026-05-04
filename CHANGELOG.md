@@ -6,6 +6,7 @@
 - Added clear blocked-state handling for malformed Hermes session phases instead of allowing low-level `jq` failures.
 - Added invalid JSON protection for Hermes session files so corrupted state is reported without being overwritten.
 - Expanded CLI `doctor` checks and tests to verify Hermes hooks and integration docs are packaged alongside OpenCode assets.
+- Aligned the exported analysis-tool type contract with the documented TypeScript, JavaScript, Python, Go, and Rust tool matrix.
 - Updated install documentation to cover Hermes verification and troubleshooting parity with OpenCode.
 
 ## v2.0.2
