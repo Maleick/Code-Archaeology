@@ -1,3 +1,21 @@
+# [2.1.0](https://github.com/Maleick/Code-Archaeology/compare/v2.0.2...v2.1.0) (2026-05-05)
+
+
+### Bug Fixes
+
+* align analysis tool types ([65b19b2](https://github.com/Maleick/Code-Archaeology/commit/65b19b2b581c2e3f196f3d53886fd8dfdab23ea2))
+* block invalid Hermes sessions ([aaafd4f](https://github.com/Maleick/Code-Archaeology/commit/aaafd4f0a0d6652ae92b5513caa13b2fabcab06e))
+* harden Hermes install checks ([bc034cc](https://github.com/Maleick/Code-Archaeology/commit/bc034cca6cb8af88287cc3656cd72adf8a4246c1))
+* remove embedded worktree and ignore .autoship/ ([400b554](https://github.com/Maleick/Code-Archaeology/commit/400b55452f96f604074d73f6eea79cf996a91aad))
+* remove stale PluginServer stub ([#3](https://github.com/Maleick/Code-Archaeology/issues/3)) ([f8b15a3](https://github.com/Maleick/Code-Archaeology/commit/f8b15a306f55cfa6e036cc05e115357ec68df023)), closes [#2](https://github.com/Maleick/Code-Archaeology/issues/2)
+
+
+### Features
+
+* **hermes:** add full Hermes Agent runtime support ([2f4ad41](https://github.com/Maleick/Code-Archaeology/commit/2f4ad41060994802c1fb3c5a480e88728838130b)), closes [#hermes-support](https://github.com/Maleick/Code-Archaeology/issues/hermes-support) [#multi-runtime](https://github.com/Maleick/Code-Archaeology/issues/multi-runtime)
+* prepare v2.1.0 release ([54507d4](https://github.com/Maleick/Code-Archaeology/commit/54507d423b421535116363be86fbcba30b161d9e))
+* **routing:** add intelligent model routing for free-tier priority ([a456556](https://github.com/Maleick/Code-Archaeology/commit/a45655602106933de64a0af5b63e18e6378847d7))
+
 # Changelog
 
 ## v2.1.0
