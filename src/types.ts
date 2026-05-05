@@ -324,12 +324,6 @@ export interface FinalCatalog {
 // CLI / Plugin
 // ---------------------------------------------------------------------------
 
-/** Minimal OpenCode plugin server shape. */
-export interface PluginServer {
-  /** Event handler (currently a no-op stub). */
-  event(): undefined;
-}
-
 /** CLI argument shape for `opencode-code-archaeology`. */
 export interface CliArgs {
   /** Target repository path. */

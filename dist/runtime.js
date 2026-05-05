@@ -8,13 +8,6 @@ export const id = "code-archaeology";
 export const repoRoot = packageRoot;
 const versionPath = resolve(packageRoot, "VERSION");
 export const version = readFileSync(versionPath, "utf8").trim();
-export async function server() {
-    return {
-        event() {
-            return undefined;
-        },
-    };
-}
 const commandFiles = [
     "code-archaeology",
     "code-archaeology-survey",

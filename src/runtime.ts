@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PluginServer } from "./types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,14 +11,6 @@ export const repoRoot = packageRoot;
 
 const versionPath = resolve(packageRoot, "VERSION");
 export const version = readFileSync(versionPath, "utf8").trim();
-
-export async function server(): Promise<PluginServer> {
-  return {
-    event() {
-      return undefined;
-    },
-  };
-}
 
 type OpenCodeConfig = {
   command?: Record<string, { template: string; description?: string }>;
