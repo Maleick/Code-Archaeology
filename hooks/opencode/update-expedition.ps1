@@ -24,7 +24,9 @@ foreach ($expedition in $session.expeditions) {
     if ($expedition.phase -eq $PHASE) {
         $expedition.status = $STATUS
         $expedition.findings_count = $FINDINGS
-        $expedition.completed_at = $NOW
+        if ($STATUS -eq "completed" -or $STATUS -eq "done") {
+            $expedition | Add-Member -MemberType NoteProperty -Name "completed_at" -Value $NOW -Force
+        }
         if ($ERROR_MSG) {
             $expedition | Add-Member -MemberType NoteProperty -Name "error" -Value $ERROR_MSG -Force
         } else {
