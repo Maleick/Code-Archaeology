@@ -21,6 +21,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Cod
 - Git installed and available in your shell.
 - A target repository with tests or type checks available before you run `restore` mode.
 - For Hermes: Hermes Agent CLI or an active Hermes session.
+- **Windows**: PowerShell 5.1 or later (hooks use `.ps1` scripts on Windows).
 
 ## Recommended OpenCode Plugin Install
 
@@ -55,9 +56,16 @@ npm install -g opencode-code-archaeology
 
 ### 2. Setup Hermes Runtime
 
+**macOS/Linux:**
 ```bash
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
+```
+
+**Windows:**
+```powershell
+cd ~/projects/Code-Archaeology
+.\hooks\hermes\setup.ps1
 ```
 
 ### 3. Create Hermes Cronjob
@@ -118,6 +126,15 @@ npm run build
 npm run typecheck
 bash -n hooks/opencode/*.sh
 bash -n hooks/hermes/*.sh
+```
+
+**Windows:**
+```powershell
+npm install
+npm run build
+npm run typecheck
+Get-ChildItem hooks/opencode/*.ps1 | ForEach-Object { Get-Command $_.FullName }
+Get-ChildItem hooks/hermes/*.ps1 | ForEach-Object { Get-Command $_.FullName }
 ```
 
 To verify command availability, restart OpenCode in a Git repository and run:
