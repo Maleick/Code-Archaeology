@@ -12,14 +12,16 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation, c
 ## Available Hooks
 
 ### OpenCode hooks (`hooks/opencode/`)
-- `init.sh` — Initialize `.archaeology/` directory and session state
-- `verify-phase.sh` — Run tests and typecheck between phases
-- `revert-phase.sh` — Revert changes if a phase fails verification
-- `update-expedition.sh` — Update expedition status in session.json
+- `init.sh` / `init.ps1` — Initialize `.archaeology/` directory and session state
+- `verify-phase.sh` / `verify-phase.ps1` — Run tests and typecheck between phases
+- `revert-phase.sh` / `revert-phase.ps1` — Revert changes if a phase fails verification
+- `update-expedition.sh` / `update-expedition.ps1` — Update expedition status in session.json
 
 ### Hermes hooks (`hooks/hermes/`)
-- `setup.sh` — Detect Hermes capabilities and write `hermes-runtime.json`
-- `runner.sh` — Execute one expedition phase per cron run with test gates
+- `setup.sh` / `setup.ps1` — Detect Hermes capabilities and write `hermes-runtime.json`
+- `runner.sh` / `runner.ps1` — Execute one expedition phase per cron run with test gates
+
+**Platform support:** `.sh` scripts run on macOS/Linux; `.ps1` scripts run on Windows (PowerShell).
 
 ## Safety Hooks
 

@@ -36,6 +36,7 @@ Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely re
 | Restore mode       | applies approved changes with test gates  |
 | Local state        | .archaeology/ runtime artifacts           |
 | Runtimes           | OpenCode plugin + Hermes Agent cron       |
+| Platforms          | macOS/Linux (bash) + Windows (PowerShell) |
 | Expedition order   | fixed stratigraphy from survey to catalog |
 +-------------------+-------------------------------------------+
 ```

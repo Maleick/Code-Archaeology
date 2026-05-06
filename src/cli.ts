@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
+import { isWindows } from "./platform.js";
 
 const PLUGIN = "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git";
 const REQUIRED_FILES = [
@@ -14,6 +15,19 @@ const REQUIRED_FILES = [
   "hooks/opencode/verify-phase.sh",
   "hooks/hermes/setup.sh",
   "hooks/hermes/runner.sh",
+  "skills/hermes/INTEGRATION.md",
+  "AGENTS.md",
+  "README.md",
+  "INSTALL.md",
+];
+
+const REQUIRED_FILES_PS1 = [
+  "commands/code-archaeology.md",
+  "skills/code-archaeology/SKILL.md",
+  "hooks/opencode/init.ps1",
+  "hooks/opencode/verify-phase.ps1",
+  "hooks/hermes/setup.ps1",
+  "hooks/hermes/runner.ps1",
   "skills/hermes/INTEGRATION.md",
   "AGENTS.md",
   "README.md",
@@ -97,10 +111,12 @@ async function install(): Promise<void> {
   console.log("Next steps:");
   console.log("1. Restart OpenCode.");
   console.log("2. Run /code-archaeology-survey in your target repository.");
+  console.log("Cross-platform: uses .ps1 hooks on Windows, .sh hooks on Unix.");
 }
 
 function doctor(): void {
-  const missing = REQUIRED_FILES.filter((file) => !existsSync(join(root, file)));
+  const files = isWindows() ? REQUIRED_FILES_PS1 : REQUIRED_FILES;
+  const missing = files.filter((file) => !existsSync(join(root, file)));
   if (missing.length > 0) {
     console.error("Missing Code Archaeology package files:");
     for (const file of missing) {
@@ -111,7 +127,7 @@ function doctor(): void {
   }
 
   console.log("Code Archaeology package files present:");
-  for (const file of REQUIRED_FILES) {
+  for (const file of files) {
     console.log(`- ${file}`);
   }
 }
