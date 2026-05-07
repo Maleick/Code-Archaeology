@@ -59,11 +59,22 @@ function Invoke-CheckedCommand {
         $arguments = $parts[1..($parts.Count - 1)]
     }
 
-    $global:LASTEXITCODE = 0
-    & $command @arguments
-    $exitCode = if ($LASTEXITCODE -ne $null) { $LASTEXITCODE } elseif ($?) { 0 } else { 1 }
-    if ($exitCode -ne 0) {
-        throw "Command failed with exit code $exitCode: $CommandLine"
+    $resolvedCommand = Get-Command -Name $command -ErrorAction Stop
+    $isExternalApplication = $resolvedCommand.CommandType -eq [System.Management.Automation.CommandTypes]::Application
+
+    if ($isExternalApplication) {
+        $global:LASTEXITCODE = 0
+        & $command @arguments
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) {
+            throw "Command failed with exit code $exitCode: $CommandLine"
+        }
+    }
+    else {
+        & $command @arguments
+        if (-not $?) {
+            throw "Command failed: $CommandLine"
+        }
     }
 }
 
