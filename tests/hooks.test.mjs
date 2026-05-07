@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -59,6 +59,38 @@ test("Hermes runner blocks malformed session state instead of advancing", async 
     assert.equal(session.current_phase, "unknown-phase");
   } finally {
     await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("Hermes runner does not follow predictable session temp symlinks when blocking", async () => {
+  const repo = await makeHookRepo();
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "victim.txt");
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(victim, "do not overwrite\n");
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({ runtime: "hermes", status: "running", current_phase: "unknown-phase", mode: "survey" })}\n`,
+    );
+    await symlink(victim, join(repo, ".archaeology", "session.json.tmp"));
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], { cwd: repo }),
+      /Unknown Hermes phase/,
+    );
+
+    const sessionPath = join(repo, ".archaeology", "session.json");
+    const sessionStat = await lstat(sessionPath);
+    const session = JSON.parse(await readFile(sessionPath, "utf8"));
+    assert.equal(await readFile(victim, "utf8"), "do not overwrite\n");
+    assert.equal(sessionStat.isSymbolicLink(), false);
+    assert.equal(sessionStat.isFile(), true);
+    assert.equal(session.status, "blocked");
+    assert.equal(session.flags.blocked_reason, "unknown phase: unknown-phase");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+    await rm(victimDir, { recursive: true, force: true });
   }
 });
 
