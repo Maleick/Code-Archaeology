@@ -64,7 +64,8 @@ test("Hermes runner blocks malformed session state instead of advancing", async 
 
 test("Hermes runner does not follow predictable session temp symlinks when blocking", async () => {
   const repo = await makeHookRepo();
-  const victim = join(await mkdtemp(join(tmpdir(), "code-archaeology-victim-")), "victim.txt");
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "victim.txt");
   try {
     await mkdir(join(repo, ".archaeology"));
     await writeFile(victim, "do not overwrite\n");
@@ -89,7 +90,7 @@ test("Hermes runner does not follow predictable session temp symlinks when block
     assert.equal(session.flags.blocked_reason, "unknown phase: unknown-phase");
   } finally {
     await rm(repo, { recursive: true, force: true });
-    await rm(victim, { force: true });
+    await rm(victimDir, { recursive: true, force: true });
   }
 });
 
