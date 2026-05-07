@@ -1,3 +1,10 @@
+## [2.2.3](https://github.com/Maleick/Code-Archaeology/compare/v2.2.2...v2.2.3) (2026-05-07)
+
+
+### Bug Fixes
+
+* suppress upstream Pages deprecation warning ([#16](https://github.com/Maleick/Code-Archaeology/issues/16)) ([85a6b8d](https://github.com/Maleick/Code-Archaeology/commit/85a6b8d7686dbb734d3934501ab9389920e2bfc5))
+
 ## [2.2.2](https://github.com/Maleick/Code-Archaeology/compare/v2.2.1...v2.2.2) (2026-05-07)
 
 
