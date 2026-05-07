@@ -1,3 +1,10 @@
+## [2.2.5](https://github.com/Maleick/Code-Archaeology/compare/v2.2.4...v2.2.5) (2026-05-07)
+
+
+### Bug Fixes
+
+* suppress workflow Node deprecation warnings ([#18](https://github.com/Maleick/Code-Archaeology/issues/18)) ([0a1c657](https://github.com/Maleick/Code-Archaeology/commit/0a1c657a91cf4f96c1b7ffd4650adcbdb621d487))
+
 ## [2.2.4](https://github.com/Maleick/Code-Archaeology/compare/v2.2.3...v2.2.4) (2026-05-07)
 
 
