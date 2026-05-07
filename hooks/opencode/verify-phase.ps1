@@ -10,38 +10,61 @@ $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 function Split-CommandLine {
     param([Parameter(Mandatory=$true)][string]$CommandLine)
 
-    $tokens = [System.Collections.Generic.List[string]]::new()
-    $current = [System.Text.StringBuilder]::new()
-    $inSingleQuote = $false
-    $inDoubleQuote = $false
+    function Convert-CommandElementToArgument {
+        param(
+            [Parameter(Mandatory=$true)]
+            [System.Management.Automation.Language.CommandElementAst]$Element,
+            [Parameter(Mandatory=$true)]
+            [string]$OriginalCommandLine
+        )
 
-    for ($i = 0; $i -lt $CommandLine.Length; $i++) {
-        $char = $CommandLine[$i]
-        if ($char -eq "'" -and -not $inDoubleQuote) {
-            $inSingleQuote = -not $inSingleQuote
-            continue
+        if ($Element -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
+            return $Element.Value
         }
-        if ($char -eq '"' -and -not $inSingleQuote) {
-            $inDoubleQuote = -not $inDoubleQuote
-            continue
+
+        if ($Element -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) {
+            return $Element.Value
         }
-        if ([char]::IsWhiteSpace($char) -and -not $inSingleQuote -and -not $inDoubleQuote) {
-            if ($current.Length -gt 0) {
-                $tokens.Add($current.ToString())
-                $null = $current.Clear()
+
+        if ($Element -is [System.Management.Automation.Language.CommandParameterAst]) {
+            if ($null -ne $Element.Argument) {
+                $argumentValue = Convert-CommandElementToArgument -Element $Element.Argument -OriginalCommandLine $OriginalCommandLine
+                return "-$($Element.ParameterName):$argumentValue"
             }
-            continue
+
+            return "-$($Element.ParameterName)"
         }
-        $null = $current.Append($char)
+
+        throw "Unsupported command syntax in command: $OriginalCommandLine"
     }
 
-    if ($inSingleQuote -or $inDoubleQuote) {
-        throw "Unterminated quote in command: $CommandLine"
+    [System.Management.Automation.Language.Token[]]$tokens = @()
+    [System.Management.Automation.Language.ParseError[]]$parseErrors = @()
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($CommandLine, [ref]$tokens, [ref]$parseErrors)
+
+    if ($parseErrors.Count -gt 0) {
+        $message = ($parseErrors | ForEach-Object { $_.Message }) -join "; "
+        throw "Invalid command syntax: $CommandLine. $message"
     }
-    if ($current.Length -gt 0) {
-        $tokens.Add($current.ToString())
+
+    $statements = @($ast.EndBlock.Statements)
+    if ($statements.Count -ne 1 -or $statements[0] -isnot [System.Management.Automation.Language.PipelineAst]) {
+        throw "Only a single simple command is supported: $CommandLine"
     }
-    return $tokens.ToArray()
+
+    $pipeline = [System.Management.Automation.Language.PipelineAst]$statements[0]
+    if ($pipeline.PipelineElements.Count -ne 1 -or $pipeline.PipelineElements[0] -isnot [System.Management.Automation.Language.CommandAst]) {
+        throw "Only a single simple command is supported: $CommandLine"
+    }
+
+    $commandAst = [System.Management.Automation.Language.CommandAst]$pipeline.PipelineElements[0]
+    $parts = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($element in $commandAst.CommandElements) {
+        $parts.Add((Convert-CommandElementToArgument -Element $element -OriginalCommandLine $CommandLine))
+    }
+
+    return $parts.ToArray()
 }
 
 function Invoke-CheckedCommand {
