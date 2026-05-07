@@ -17,10 +17,6 @@ function Convert-CommandElementToArgument {
         return $Element.Value
     }
 
-    if ($Element -is [System.Management.Automation.Language.ConstantExpressionAst]) {
-        return [string]$Element.Value
-    }
-
     if ($Element -is [System.Management.Automation.Language.CommandParameterAst]) {
         if ($null -ne $Element.Argument) {
             $argumentValue = Convert-CommandElementToArgument -Element $Element.Argument -CommandLine $CommandLine
@@ -83,10 +79,6 @@ function Invoke-CheckedCommand {
     }
 
     $resolvedCommand = Get-Command -Name $command -ErrorAction Stop | Select-Object -First 1
-    if ($resolvedCommand -is [System.Management.Automation.AliasInfo]) {
-        $resolvedCommand = $resolvedCommand.ResolvedCommand
-    }
-
     $isExternalApplication = $resolvedCommand.CommandType -eq [System.Management.Automation.CommandTypes]::Application
     if ($isExternalApplication) {
         $global:LASTEXITCODE = 0
