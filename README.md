@@ -251,7 +251,7 @@ Code-Archaeology/
 |-- docs/               # Public docs and release notes
 |-- hooks/opencode/     # Init, verification, revert, and status hooks
 |-- hooks/hermes/       # Setup and runner hooks for Hermes Agent
-|-- plugins/            # OpenCode plugin entry point
+|-- plugins/            # Repo-local legacy plugin shim
 |-- prompts/            # Expedition prompts by phase
 |-- schema/             # JSON schemas for reports
 |-- skills/             # Code Archaeology skill definitions

@@ -145,11 +145,12 @@ test("Hermes runner blocks restore mode without operator approval", async () => 
   }
 });
 
-test("Hermes runner allows restore mode with operator approval", async () => {
+test("Hermes runner blocks restore mode until restore implementation exists", async () => {
   const repo = await makeHookRepo();
   try {
     await mkdir(join(repo, ".archaeology"));
     const marker = join(repo, "hermes-restore-marker");
+    const { stdout: originalBranch } = await execFileAsync("git", ["branch", "--show-current"], { cwd: repo });
     await writeFile(
       join(repo, ".archaeology", "session.json"),
       `${JSON.stringify({
@@ -164,15 +165,47 @@ test("Hermes runner allows restore mode with operator approval", async () => {
       })}\n`,
     );
 
-    await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+        cwd: repo,
+        env: { ...process.env, HERMES_RESTORE_APPROVED: "1" },
+      }),
+      /Hermes restore mode is not implemented/,
+    );
+
+    await assert.rejects(readFile(marker, "utf8"), { code: "ENOENT" });
+    const { stdout: currentBranch } = await execFileAsync("git", ["branch", "--show-current"], { cwd: repo });
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(currentBranch, originalBranch);
+    assert.equal(session.status, "blocked");
+    assert.equal(session.flags.blocked_reason, "restore mode is not implemented in Hermes runner");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await writeFile(join(repo, "package.json"), `${JSON.stringify({ scripts: { test: "false" } })}\n`);
+    await writeFile(join(repo, "new-artifact.txt"), "preserve me\n");
+
+    await execFileAsync("bash", [join(repo, "hooks", "opencode", "revert-phase.sh"), "test-phase"], {
       cwd: repo,
-      env: { ...process.env, HERMES_RESTORE_APPROVED: "1" },
     });
 
-    assert.equal(await readFile(marker, "utf8"), "testtypechecktesttypecheck");
-    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.deepEqual(session.completed_phases, ["site-survey"]);
-    assert.equal(session.current_phase, "dead-code");
+    const { stdout: status } = await execFileAsync("git", ["status", "--short"], { cwd: repo });
+    const { stdout: stashList } = await execFileAsync("git", ["stash", "list"], { cwd: repo });
+    const { stdout: stashFiles } = await execFileAsync(
+      "git",
+      ["stash", "show", "--include-untracked", "--name-only", "stash@{0}"],
+      { cwd: repo },
+    );
+
+    assert.equal(status, "");
+    assert.match(stashList, /code-archaeology-revert-test-phase/);
+    assert.match(stashFiles, /package\.json/);
+    assert.match(stashFiles, /new-artifact\.txt/);
   } finally {
     await rm(repo, { recursive: true, force: true });
   }

@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { dirname, join } from "node:path";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import test from "node:test";
 
+const execFileAsync = promisify(execFile);
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 
 test("package root default export is an OpenCode plugin function", async () => {
@@ -12,16 +15,17 @@ test("package root default export is an OpenCode plugin function", async () => {
   assert.equal(typeof pluginModule.default, "function");
 });
 
-test("package root exposes only the default runtime plugin export", async () => {
+test("package root exposes default runtime plugin and public type values", async () => {
   const pluginModule = await import("../dist/index.js");
 
-  assert.deepEqual(Object.keys(pluginModule), ["default"]);
+  assert.deepEqual(Object.keys(pluginModule).sort(), ["DEFAULT_CONFIG", "default"]);
+  assert.equal(pluginModule.DEFAULT_CONFIG.mode, "survey");
 });
 
-test("plugin subpath exposes only the default runtime plugin export", async () => {
+test("plugin subpath exposes default runtime plugin and public type values", async () => {
   const pluginModule = await import("../dist/plugin.js");
 
-  assert.deepEqual(Object.keys(pluginModule), ["default"]);
+  assert.deepEqual(Object.keys(pluginModule).sort(), ["DEFAULT_CONFIG", "default"]);
   assert.equal(typeof pluginModule.default, "function");
 });
 
@@ -75,8 +79,17 @@ test("plugin config registers Code Archaeology command templates", async () => {
   assert.match(config.command["code-archaeology"].template, /use `\/code-archaeology-restore`/i);
 });
 
-test("legacy plugin shim remains default-only", async () => {
+test("legacy plugin shim remains repo-local and default-only", async () => {
   const shim = await readFile(join(root, "plugins", "code-archaeology.ts"), "utf8");
 
   assert.equal(shim.trim(), 'export { default } from "../src/index.ts";');
+});
+
+test("package contents exclude repo-local plugin shim and include public types", async () => {
+  const { stdout } = await execFileAsync("npm", ["pack", "--json", "--dry-run"], { cwd: root });
+  const pack = JSON.parse(stdout.slice(stdout.indexOf("[")))[0];
+  const files = pack.files.map((file) => file.path);
+
+  assert.equal(files.includes("plugins/code-archaeology.ts"), false);
+  assert.equal(files.includes("dist/types.d.ts"), true);
 });
