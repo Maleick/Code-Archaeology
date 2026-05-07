@@ -1,3 +1,21 @@
+# [2.2.0](https://github.com/Maleick/Code-Archaeology/compare/v2.1.0...v2.2.0) (2026-05-07)
+
+
+### Bug Fixes
+
+* avoid session-sourced verification commands ([#10](https://github.com/Maleick/Code-Archaeology/issues/10)) ([9d3296d](https://github.com/Maleick/Code-Archaeology/commit/9d3296d1551ed7c97b90aca5c4be932bad5042e6))
+* harden PowerShell verification hooks ([#6](https://github.com/Maleick/Code-Archaeology/issues/6)) ([ae1c1fa](https://github.com/Maleick/Code-Archaeology/commit/ae1c1fab3b1ce84872ad8217959d321e8e42266b))
+* harden trusted publishing safety ([c78ee2e](https://github.com/Maleick/Code-Archaeology/commit/c78ee2e9bc75ff6554e75f848f64a3054a74344e))
+* **hermes:** require operator approval for restore mode ([#8](https://github.com/Maleick/Code-Archaeology/issues/8)) ([772cd67](https://github.com/Maleick/Code-Archaeology/commit/772cd67df32f853c562fe8ed46f6d1528b477fda))
+* only set completed_at when status is completed ([ebf1040](https://github.com/Maleick/Code-Archaeology/commit/ebf1040fb8a4a9ff23a40d6fa6042313e590b363))
+* pass model router args safely ([#11](https://github.com/Maleick/Code-Archaeology/issues/11)) ([a7379fc](https://github.com/Maleick/Code-Archaeology/commit/a7379fcf425eab70f2906de75f0a158e7d418e85))
+* secure Hermes session rewrites ([#7](https://github.com/Maleick/Code-Archaeology/issues/7)) ([55d5694](https://github.com/Maleick/Code-Archaeology/commit/55d5694684158d1ae471fed25b4f8de0706c7810))
+
+
+### Features
+
+* Add Windows/PowerShell support ([a6b74ea](https://github.com/Maleick/Code-Archaeology/commit/a6b74ea75c1eb60263e939df3dc27fa4cc8b7a72)), closes [#4](https://github.com/Maleick/Code-Archaeology/issues/4)
+
 # [2.1.0](https://github.com/Maleick/Code-Archaeology/compare/v2.0.2...v2.1.0) (2026-05-05)
 
 
