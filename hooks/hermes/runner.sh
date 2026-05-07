@@ -35,7 +35,7 @@ require_jq() {
 
 read_session_string() {
   local key="$1"
-  if ! jq -er --arg key "$key" '.[$key] | strings' "$SESSION_FILE" 2>/dev/null; then
+  if ! jq -er --arg key "$key" '.[$key] | strings | select(test("\\S"))' "$SESSION_FILE" 2>/dev/null; then
     block_session "invalid session field: $key" "Invalid Hermes session field: $key"
   fi
 }
