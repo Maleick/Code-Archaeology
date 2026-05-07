@@ -9,13 +9,13 @@ SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Source config from session file if jq is available
-TEST_CMD="npm test"
-TYPECHECK_CMD="npx tsc --noEmit"
-if command -v jq >/dev/null 2>&1 && [[ -f "$SESSION_FILE" ]]; then
-  TEST_CMD=$(jq -r '.config.test_command // "npm test"' "$SESSION_FILE")
-  TYPECHECK_CMD=$(jq -r '.config.typecheck_command // "npx tsc --noEmit"' "$SESSION_FILE")
-fi
+# Verification commands must not be read from repository-local state.
+# A malicious repository can pre-seed .archaeology/session.json; executing commands
+# from that file would cross the repository-to-workstation trust boundary.
+# Operators who intentionally need custom commands can approve them explicitly via
+# environment variables for the current process.
+TEST_CMD="${CODE_ARCHAEOLOGY_TEST_COMMAND:-npm test}"
+TYPECHECK_CMD="${CODE_ARCHAEOLOGY_TYPECHECK_COMMAND:-npx tsc --noEmit}"
 
 echo "[$PHASE] Running test command: $TEST_CMD"
 if ! bash -c "$TEST_CMD"; then

@@ -35,13 +35,13 @@ The README should follow the pattern proven by AutoShip and AutoResearch:
 Root `INSTALL.md` should mirror the Superpowers install-hand-off style:
 
 ```text
-Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
+Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0 by opening https://unpkg.com/opencode-code-archaeology@2.2.0/INSTALL.md
 ```
 
 The document should include:
 
 - OpenCode plugin installation using the current OpenCode `opencode.json` `plugin` array.
-- npm global install path using `npm install -g opencode-code-archaeology` when the published package exposes a CLI.
+- npm global install path using a pinned package version, such as `npm install -g opencode-code-archaeology@2.2.0`, when the published package exposes a CLI.
 - Verification commands that do not require secrets.
 - Troubleshooting notes for plugin loading, package cache, and command discovery.
 

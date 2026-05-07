@@ -7,17 +7,13 @@ $PHASE = if ($args[0]) { $args[0] } else { "unknown" }
 $ARCHAEOLOGY_DIR = ".archaeology"
 $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 
-$TEST_CMD = "npm test"
-$TYPECHECK_CMD = "npx tsc --noEmit"
-if (Test-Path "$SESSION_FILE") {
-    $session = Get-Content "$SESSION_FILE" -Raw | ConvertFrom-Json
-    if ($session.config.test_command) {
-        $TEST_CMD = $session.config.test_command
-    }
-    if ($session.config.typecheck_command) {
-        $TYPECHECK_CMD = $session.config.typecheck_command
-    }
-}
+# Verification commands must not be read from repository-local state.
+# A malicious repository can pre-seed .archaeology/session.json; executing commands
+# from that file would cross the repository-to-workstation trust boundary.
+# Operators who intentionally need custom commands can approve them explicitly via
+# environment variables for the current process.
+$TEST_CMD = if ($env:CODE_ARCHAEOLOGY_TEST_COMMAND) { $env:CODE_ARCHAEOLOGY_TEST_COMMAND } else { "npm test" }
+$TYPECHECK_CMD = if ($env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND) { $env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND } else { "npx tsc --noEmit" }
 
 Write-Host "[$PHASE] Running test command: $TEST_CMD"
 try {

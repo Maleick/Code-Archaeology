@@ -111,3 +111,69 @@ test("Hermes runner blocks invalid session JSON without overwriting it", async (
     await rm(repo, { recursive: true, force: true });
   }
 });
+
+test("Hermes runner blocks restore mode without operator approval", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const marker = join(repo, "hermes-rce-marker");
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "running",
+        current_phase: "site-survey",
+        completed_phases: [],
+        mode: "restore",
+        test_command: `printf exploited > ${marker}`,
+        typecheck_command: "true",
+        branch_name: "refactor/archaeology",
+      })}\n`,
+    );
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], { cwd: repo }),
+      /Hermes restore mode is disabled/,
+    );
+
+    await assert.rejects(readFile(marker, "utf8"), { code: "ENOENT" });
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(session.status, "blocked");
+    assert.equal(session.flags.blocked_reason, "restore mode requires HERMES_RESTORE_APPROVED=1");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("Hermes runner allows restore mode with operator approval", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const marker = join(repo, "hermes-restore-marker");
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "running",
+        current_phase: "site-survey",
+        completed_phases: [],
+        mode: "restore",
+        test_command: `printf test >> ${marker}`,
+        typecheck_command: `printf typecheck >> ${marker}`,
+        branch_name: "refactor/archaeology",
+      })}\n`,
+    );
+
+    await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+      cwd: repo,
+      env: { ...process.env, HERMES_RESTORE_APPROVED: "1" },
+    });
+
+    assert.equal(await readFile(marker, "utf8"), "testtypechecktesttypecheck");
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.deepEqual(session.completed_phases, ["site-survey"]);
+    assert.equal(session.current_phase, "dead-code");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
