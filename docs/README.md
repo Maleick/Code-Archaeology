@@ -30,7 +30,7 @@ npm install -g opencode-code-archaeology@2.2.0 && opencode-code-archaeology inst
 Or tell OpenCode:
 
 ```text
-Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0
+Fetch and follow the instructions in the installed package's INSTALL.md at $(npm root -g)/opencode-code-archaeology/INSTALL.md for opencode-code-archaeology@2.2.0
 ```
 
 Restart OpenCode in the repository you want to inspect and start with the non-destructive default command:
