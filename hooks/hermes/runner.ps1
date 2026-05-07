@@ -8,41 +8,62 @@ $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR" | Out-Null
 
+function Convert-CommandElementToArgument {
+    param(
+        [Parameter(Mandatory=$true)]
+        [System.Management.Automation.Language.CommandElementAst]$Element,
+
+        [Parameter(Mandatory=$true)]
+        [string]$CommandLine
+    )
+
+    if ($Element -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
+        return $Element.Value
+    }
+
+    if ($Element -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) {
+        return $Element.Value
+    }
+
+    throw "Unsupported command element in command: $CommandLine"
+}
+
 function Split-CommandLine {
     param([Parameter(Mandatory=$true)][string]$CommandLine)
 
-    $tokens = [System.Collections.Generic.List[string]]::new()
-    $current = [System.Text.StringBuilder]::new()
-    $inSingleQuote = $false
-    $inDoubleQuote = $false
+    $parseErrors = $null
+    $tokens = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseInput($CommandLine, [ref]$tokens, [ref]$parseErrors)
 
-    for ($i = 0; $i -lt $CommandLine.Length; $i++) {
-        $char = $CommandLine[$i]
-        if ($char -eq "'" -and -not $inDoubleQuote) {
-            $inSingleQuote = -not $inSingleQuote
-            continue
-        }
-        if ($char -eq '"' -and -not $inSingleQuote) {
-            $inDoubleQuote = -not $inDoubleQuote
-            continue
-        }
-        if ([char]::IsWhiteSpace($char) -and -not $inSingleQuote -and -not $inDoubleQuote) {
-            if ($current.Length -gt 0) {
-                $tokens.Add($current.ToString())
-                $null = $current.Clear()
-            }
-            continue
-        }
-        $null = $current.Append($char)
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        throw "Invalid command syntax: $CommandLine"
     }
 
-    if ($inSingleQuote -or $inDoubleQuote) {
-        throw "Unterminated quote in command: $CommandLine"
+    $statements = @($ast.EndBlock.Statements)
+    if ($statements.Count -ne 1 -or $statements[0] -isnot [System.Management.Automation.Language.PipelineAst]) {
+        throw "Command must be a single simple command invocation: $CommandLine"
     }
-    if ($current.Length -gt 0) {
-        $tokens.Add($current.ToString())
+
+    $pipelineAst = [System.Management.Automation.Language.PipelineAst]$statements[0]
+    if ($pipelineAst.PipelineElements.Count -ne 1 -or $pipelineAst.PipelineElements[0] -isnot [System.Management.Automation.Language.CommandAst]) {
+        throw "Command must not contain pipelines or operators: $CommandLine"
     }
-    return $tokens.ToArray()
+
+    $commandAst = [System.Management.Automation.Language.CommandAst]$pipelineAst.PipelineElements[0]
+    if ($commandAst.Redirections.Count -gt 0) {
+        throw "Command must not contain redirections: $CommandLine"
+    }
+
+    $parts = [System.Collections.Generic.List[string]]::new()
+    foreach ($element in $commandAst.CommandElements) {
+        $parts.Add((Convert-CommandElementToArgument -Element $element -CommandLine $CommandLine))
+    }
+
+    if ($parts.Count -eq 0) {
+        throw "Empty command"
+    }
+
+    return $parts.ToArray()
 }
 
 function Invoke-CheckedCommand {
