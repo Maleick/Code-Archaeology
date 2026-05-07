@@ -7,6 +7,11 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ARCHAEOLOGY_DIR="$REPO_ROOT/.archaeology"
 SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
 
+# Restore mode can execute operator-provided verification commands. Keep the
+# authorization outside repository-controlled files so a malicious checkout
+# cannot enable unattended command execution by shipping .archaeology state.
+RESTORE_APPROVAL_ENV="HERMES_RESTORE_APPROVED"
+
 mkdir -p "$ARCHAEOLOGY_DIR"
 
 block_session() {
@@ -25,6 +30,31 @@ require_jq() {
   if ! command -v jq >/dev/null 2>&1; then
     echo "ERROR: jq is required for Hermes session management" >&2
     exit 1
+  fi
+}
+
+read_session_string() {
+  local key="$1"
+  if ! jq -er --arg key "$key" '.[$key] | strings' "$SESSION_FILE" 2>/dev/null; then
+    block_session "invalid session field: $key" "Invalid Hermes session field: $key"
+  fi
+}
+
+require_restore_approval() {
+  if [[ "${!RESTORE_APPROVAL_ENV:-}" != "1" ]]; then
+    block_session \
+      "restore mode requires ${RESTORE_APPROVAL_ENV}=1" \
+      "Hermes restore mode is disabled until the operator sets ${RESTORE_APPROVAL_ENV}=1 outside session.json"
+  fi
+}
+
+validate_branch_name() {
+  local branch="$1"
+  if [[ -z "$branch" || "$branch" == -* || "$branch" =~ [[:space:]] ]]; then
+    block_session "invalid branch_name" "Invalid Hermes branch_name: $branch"
+  fi
+  if ! git check-ref-format --branch "$branch" >/dev/null 2>&1; then
+    block_session "invalid branch_name" "Invalid Hermes branch_name: $branch"
   fi
 }
 
@@ -94,18 +124,19 @@ total_phases=${#PHASES[@]}
 
 echo "=== Code Archaeology Hermes Runner ==="
 echo "Phase $phase_number/$total_phases: $current_phase"
-echo "Mode: $(jq -r '.mode' "$SESSION_FILE")"
+echo "Mode: $(read_session_string mode)"
 echo ""
 
 # Run the phase
 cd "$REPO_ROOT"
 
 # Create branch if needed
-branch=$(jq -r '.branch_name' "$SESSION_FILE")
+branch=$(read_session_string branch_name)
+validate_branch_name "$branch"
 git checkout -b "$branch" 2>/dev/null || git checkout "$branch"
 
 # Execute phase based on mode
-mode=$(jq -r '.mode' "$SESSION_FILE")
+mode=$(read_session_string mode)
 
 if [[ "$mode" == "survey" ]]; then
   echo "Running SURVEY for phase $current_phase..."
@@ -183,12 +214,13 @@ elif [[ "$mode" == "excavate" ]]; then
   echo "Mock patch written: $patch_file"
   
 elif [[ "$mode" == "restore" ]]; then
+  require_restore_approval
   echo "Running RESTORE for phase $current_phase..."
   # Apply approved changes (test-gated)
   
   # Run tests before changes
-  test_cmd=$(jq -r '.test_command' "$SESSION_FILE")
-  typecheck_cmd=$(jq -r '.typecheck_command' "$SESSION_FILE")
+  test_cmd=$(read_session_string test_command)
+  typecheck_cmd=$(read_session_string typecheck_command)
   
   echo "Running pre-restore verification..."
   if ! bash -c "$test_cmd" 2>/dev/null; then
@@ -223,6 +255,8 @@ elif [[ "$mode" == "restore" ]]; then
   fi
   
   echo "Post-restore verification passed. Changes kept."
+else
+  block_session "unknown mode: $mode" "Unknown Hermes mode: $mode"
 fi
 
 # Update session: mark phase complete, advance to next
