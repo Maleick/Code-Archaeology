@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/Maleick/Code-Archaeology/compare/v2.2.0...v2.2.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* opt actions into Node 24 runtime ([#14](https://github.com/Maleick/Code-Archaeology/issues/14)) ([1d2b797](https://github.com/Maleick/Code-Archaeology/commit/1d2b797c629ba0c3a7b9245cb596e3fac2c42cd7))
+
 # [2.2.0](https://github.com/Maleick/Code-Archaeology/compare/v2.1.0...v2.2.0) (2026-05-07)
 
 
