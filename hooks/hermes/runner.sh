@@ -7,13 +7,50 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ARCHAEOLOGY_DIR="$REPO_ROOT/.archaeology"
 SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
 
-mkdir -p "$ARCHAEOLOGY_DIR"
+ensure_session_paths_safe() {
+  if [[ -L "$ARCHAEOLOGY_DIR" ]]; then
+    echo "ERROR: $ARCHAEOLOGY_DIR must not be a symlink" >&2
+    return 1
+  fi
+
+  if [[ -e "$ARCHAEOLOGY_DIR" && ! -d "$ARCHAEOLOGY_DIR" ]]; then
+    echo "ERROR: $ARCHAEOLOGY_DIR must be a directory" >&2
+    return 1
+  fi
+
+  if [[ ! -e "$ARCHAEOLOGY_DIR" ]]; then
+    mkdir -p "$ARCHAEOLOGY_DIR" || return 1
+  fi
+
+  if [[ ! -d "$ARCHAEOLOGY_DIR" || -L "$ARCHAEOLOGY_DIR" ]]; then
+    echo "ERROR: $ARCHAEOLOGY_DIR must be a real directory" >&2
+    return 1
+  fi
+
+  if [[ -L "$SESSION_FILE" ]]; then
+    echo "ERROR: $SESSION_FILE must not be a symlink" >&2
+    return 1
+  fi
+
+  if [[ -d "$SESSION_FILE" ]]; then
+    echo "ERROR: $SESSION_FILE must not be a directory" >&2
+    return 1
+  fi
+}
+
+ensure_session_paths_safe
 
 write_session_jq() {
   local tmp
+
+  ensure_session_paths_safe || return 1
   tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX") || return 1
 
   if jq "$@" "$SESSION_FILE" > "$tmp"; then
+    ensure_session_paths_safe || {
+      rm -f "$tmp"
+      return 1
+    }
     mv -f "$tmp" "$SESSION_FILE"
   else
     rm -f "$tmp"
