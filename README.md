@@ -208,8 +208,8 @@ flowchart LR
 | `language` | `typescript` | Primary language for tooling selection. | Same |
 | `mode` | `survey` | `survey`, `excavate`, or `restore`. | Change in `session.json` to switch modes. |
 | `strict_mode` | `false` | When true, restore may also apply medium-confidence findings. | Same |
-| `test_command` | `npm test` | Test command run by verification hooks. | Same |
-| `typecheck_command` | `npx tsc --noEmit` | Type-check command run by verification hooks. | Same |
+| `test_command` | `npm test` | Recorded session default only; verification hooks do not execute repository-local command values. Use `CODE_ARCHAEOLOGY_TEST_COMMAND` to approve an override for the current process. | Same |
+| `typecheck_command` | `npx tsc --noEmit` | Recorded session default only; verification hooks do not execute repository-local command values. Use `CODE_ARCHAEOLOGY_TYPECHECK_COMMAND` to approve an override for the current process. | Same |
 | `branch_name` | `refactor/archaeology` | Branch used for isolated restore work. | Same |
 
 ## Expedition Order
