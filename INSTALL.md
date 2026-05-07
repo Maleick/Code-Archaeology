@@ -12,7 +12,7 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation. I
 Paste this into OpenCode if you want the agent to install and verify the plugin for you:
 
 ```text
-Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0
+Run `npm pack opencode-code-archaeology@2.2.0`, extract the resulting tarball, then open and follow `package/INSTALL.md` from that tarball. If you need a concrete command sequence: `npm pack opencode-code-archaeology@2.2.0 && tar -xof opencode-code-archaeology-2.2.0.tgz && cat package/INSTALL.md`.
 ```
 
 ## Prerequisites
