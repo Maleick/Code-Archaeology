@@ -9,21 +9,13 @@ $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $SCRIPT_DIR "../shared/command-utils.ps1")
 
-$TEST_CMD = "npm test"
-$TYPECHECK_CMD = "npx tsc --noEmit"
-if (Test-Path "$SESSION_FILE") {
-    $session = Get-Content "$SESSION_FILE" -Raw | ConvertFrom-Json
-    if ($env:CODE_ARCHAEOLOGY_TRUST_SESSION_COMMANDS -eq "1") {
-        if ($session.config.test_command) {
-            $TEST_CMD = $session.config.test_command
-        }
-        if ($session.config.typecheck_command) {
-            $TYPECHECK_CMD = $session.config.typecheck_command
-        }
-    } elseif ($session.config.test_command -or $session.config.typecheck_command) {
-        Write-Warning "Ignoring test/typecheck commands from session.json. Set CODE_ARCHAEOLOGY_TRUST_SESSION_COMMANDS=1 to opt in."
-    }
-}
+# Verification commands must not be read from repository-local state.
+# A malicious repository can pre-seed .archaeology/session.json; executing commands
+# from that file would cross the repository-to-workstation trust boundary.
+# Operators who intentionally need custom commands can approve them explicitly via
+# environment variables for the current process.
+$TEST_CMD = if ($env:CODE_ARCHAEOLOGY_TEST_COMMAND) { $env:CODE_ARCHAEOLOGY_TEST_COMMAND } else { "npm test" }
+$TYPECHECK_CMD = if ($env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND) { $env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND } else { "npx tsc --noEmit" }
 
 Write-Host "[$PHASE] Running test command: $TEST_CMD"
 try {

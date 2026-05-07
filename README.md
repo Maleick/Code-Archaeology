@@ -61,7 +61,7 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 Paste this handoff into your agent:
 
 ```text
-Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
+Run `npm pack opencode-code-archaeology@2.2.0`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
 ```
 
 Recommended plugin install in `opencode.json`:
@@ -69,7 +69,7 @@ Recommended plugin install in `opencode.json`:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git"
+    "opencode-code-archaeology@2.2.0"
   ]
 }
 ```
@@ -77,20 +77,20 @@ Recommended plugin install in `opencode.json`:
 Global npm install path:
 
 ```bash
-npm install -g opencode-code-archaeology && opencode-code-archaeology install && opencode-code-archaeology doctor
+npm install -g opencode-code-archaeology@2.2.0 && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 One-time package runner path, if your OpenCode setup supports package execution through Bun:
 
 ```bash
-bunx opencode-code-archaeology install
-bunx opencode-code-archaeology doctor
+bunx opencode-code-archaeology@2.2.0 install
+bunx opencode-code-archaeology@2.2.0 doctor
 ```
 
 ### Hermes Agent
 
 ```bash
-npm install -g opencode-code-archaeology
+npm install -g opencode-code-archaeology@2.2.0
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
 
@@ -208,8 +208,8 @@ flowchart LR
 | `language` | `typescript` | Primary language for tooling selection. | Same |
 | `mode` | `survey` | `survey`, `excavate`, or `restore`. | Change in `session.json` to switch modes. |
 | `strict_mode` | `false` | When true, restore may also apply medium-confidence findings. | Same |
-| `test_command` | `npm test` | Test command run by verification hooks. | Same |
-| `typecheck_command` | `npx tsc --noEmit` | Type-check command run by verification hooks. | Same |
+| `test_command` | `npm test` | Recorded session default only; verification hooks do not execute repository-local command values. Use `CODE_ARCHAEOLOGY_TEST_COMMAND` to approve an override for the current process. | Same |
+| `typecheck_command` | `npx tsc --noEmit` | Recorded session default only; verification hooks do not execute repository-local command values. Use `CODE_ARCHAEOLOGY_TYPECHECK_COMMAND` to approve an override for the current process. | Same |
 | `branch_name` | `refactor/archaeology` | Branch used for isolated restore work. | Same |
 
 ## Expedition Order
