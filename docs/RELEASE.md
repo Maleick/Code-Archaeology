@@ -64,7 +64,6 @@ Inspect `npm pack --json --dry-run` output for the package contents. Required fi
 - `hooks/`
 - `commands/`
 - `skills/`
-- `plugins/`
 - `schema/`
 - `prompts/`
 - `docs/`
@@ -77,6 +76,8 @@ Inspect `npm pack --json --dry-run` output for the package contents. Required fi
 - `CONTRIBUTING.md`
 - `SECURITY.md`
 - `LICENSE`
+
+`plugins/` is intentionally repo-local and should not appear in npm package contents.
 
 If any required file is missing, update the `files` array in `package.json`, rerun `npm install` if the lockfile needs to change, and repeat the package dry run.
 
@@ -107,11 +108,13 @@ Before publishing, trim the notes to the specific version section if `CHANGELOG.
 
 ## 8. npm Publish
 
-Publish only after the GitHub tag and release are correct:
+Publishing is performed by `.github/workflows/release.yml` through npm trusted publishing. Configure npm Trusted Publisher with:
 
-```bash
-npm publish --access public
-```
+- Publisher: `GitHub Actions`
+- Organization or user: `Maleick`
+- Repository: `Code-Archaeology`
+- Workflow filename: `release.yml`
+- Environment name: leave blank unless the workflow adds a GitHub Actions `environment`
 
 If publishing fails, do not create a replacement tag unless the failure requires a new package version. Fix the issue, rerun verification, and follow npm versioning rules.
 

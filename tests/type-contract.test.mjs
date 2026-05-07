@@ -14,7 +14,7 @@ test("AnalysisTool includes every documented language analysis tool", async () =
     const contractPath = join(dir, "analysis-tool-contract.ts");
     await writeFile(
       contractPath,
-      `import type { AnalysisTool } from "${join(root, "src", "types.ts")}";
+      `import type { AnalysisTool } from "${join(root, "dist", "types.d.ts")}";
 
 const documentedTools = [
   "knip",

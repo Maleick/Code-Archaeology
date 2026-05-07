@@ -18,6 +18,13 @@
 
 # Changelog
 
+## Unreleased
+
+- Switched release publishing to npm trusted publishing with GitHub Actions OIDC.
+- Hardened Hermes restore mode so it blocks explicitly until implemented instead of reporting a successful no-op restore.
+- Changed OpenCode revert handling to preserve failed phase changes in a named git stash instead of dropping them.
+- Exposed public type definitions through package exports and excluded the repo-local legacy plugin shim from npm package contents.
+
 ## v2.1.0
 
 - Changed `/code-archaeology` to run the full 10-phase survey chain by default without per-phase prompts.

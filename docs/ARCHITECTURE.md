@@ -12,7 +12,7 @@ Code-Archaeology/
 |-- docs/               # Public documentation and release notes
 |-- hooks/opencode/     # Init, verification, revert, and status hooks
 |-- hooks/hermes/       # Setup and runner hooks for Hermes Agent
-|-- plugins/            # OpenCode plugin entry point
+|-- plugins/            # Repo-local legacy plugin shim
 |-- prompts/            # Expedition prompts by phase
 |-- schema/             # JSON schemas for reports
 |-- skills/             # Code Archaeology skill definitions
@@ -29,7 +29,7 @@ Code-Archaeology/
 
 ### OpenCode Plugin Surfaces
 
-- `plugins/` exposes the plugin entry point consumed by OpenCode.
+- `dist/index.js` and the `./plugin` package export expose the plugin entry point consumed by OpenCode. `plugins/` is a repo-local legacy shim and is not included in npm package contents.
 - `commands/` defines the slash command family: `/code-archaeology`, `/code-archaeology-survey`, `/code-archaeology-excavate`, and `/code-archaeology-restore`. The default `/code-archaeology` command runs the full survey chain without per-phase prompts and remains non-destructive.
 - `skills/code-archaeology/` contains the domain workflow instructions agents follow during an expedition.
 - `hooks/opencode/` provides shell gates for session setup, verification, rollback, and status updates.
