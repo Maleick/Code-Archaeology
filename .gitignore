@@ -25,6 +25,7 @@ coverage/
 .archaeology/
 .autoresearch/
 .superpowers/
+HERMES_PROMPT.md
 
 # Worktrees
 .worktrees/
