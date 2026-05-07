@@ -1,3 +1,10 @@
+## [2.2.6](https://github.com/Maleick/Code-Archaeology/compare/v2.2.5...v2.2.6) (2026-05-07)
+
+
+### Bug Fixes
+
+* record completed timestamp for complete status ([#19](https://github.com/Maleick/Code-Archaeology/issues/19)) ([5e17231](https://github.com/Maleick/Code-Archaeology/commit/5e17231b095b7ae1e8615a1f0c55adedda15489f))
+
 ## [2.2.5](https://github.com/Maleick/Code-Archaeology/compare/v2.2.4...v2.2.5) (2026-05-07)
 
 
