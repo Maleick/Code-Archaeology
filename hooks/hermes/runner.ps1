@@ -12,6 +12,7 @@ $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 $RESTORE_APPROVAL_ENV = "HERMES_RESTORE_APPROVED"
 
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR" | Out-Null
+. (Join-Path $SCRIPT_DIR "../shared/command-utils.ps1")
 
 function Block-Session {
     param(
@@ -213,7 +214,7 @@ if ($mode -eq "survey") {
 
     Write-Host "Running pre-restore verification..."
     try {
-        Invoke-Expression $test_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $test_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Tests failed before restore. Stopping."
         $session.status = "blocked"
@@ -226,7 +227,7 @@ if ($mode -eq "survey") {
     }
 
     try {
-        Invoke-Expression $typecheck_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $typecheck_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Typecheck failed before restore. Stopping."
         $session.status = "blocked"
@@ -244,7 +245,7 @@ if ($mode -eq "survey") {
     # Run tests after changes
     Write-Host "Running post-restore verification..."
     try {
-        Invoke-Expression $test_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $test_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Tests failed after restore. Reverting..."
         git reset --hard HEAD
@@ -258,7 +259,7 @@ if ($mode -eq "survey") {
     }
 
     try {
-        Invoke-Expression $typecheck_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $typecheck_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Typecheck failed after restore. Reverting..."
         git reset --hard HEAD

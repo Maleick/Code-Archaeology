@@ -6,6 +6,8 @@ $ErrorActionPreference = 'Stop'
 $PHASE = if ($args[0]) { $args[0] } else { "unknown" }
 $ARCHAEOLOGY_DIR = ".archaeology"
 $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
+$SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
+. (Join-Path $SCRIPT_DIR "../shared/command-utils.ps1")
 
 # Verification commands must not be read from repository-local state.
 # A malicious repository can pre-seed .archaeology/session.json; executing commands
@@ -17,7 +19,7 @@ $TYPECHECK_CMD = if ($env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND) { $env:CODE_ARCHAE
 
 Write-Host "[$PHASE] Running test command: $TEST_CMD"
 try {
-    Invoke-Expression $TEST_CMD | Out-Default
+    Invoke-CheckedCommand -CommandLine $TEST_CMD | Out-Default
 } catch {
     Write-Error "[$PHASE] Tests FAILED"
     exit 1
@@ -25,7 +27,7 @@ try {
 
 Write-Host "[$PHASE] Running typecheck: $TYPECHECK_CMD"
 try {
-    Invoke-Expression $TYPECHECK_CMD 2>$null | Out-Default
+    Invoke-CheckedCommand -CommandLine $TYPECHECK_CMD 2>$null | Out-Default
 } catch {
     Write-Warning "[$PHASE] Typecheck reported errors (non-blocking for some languages)"
 }
