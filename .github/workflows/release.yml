@@ -17,6 +17,9 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      - name: Configure Git default branch
+        run: git config --global init.defaultBranch main
+
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
