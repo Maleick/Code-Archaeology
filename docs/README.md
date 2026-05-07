@@ -24,13 +24,13 @@ The public landing page is [`index.html`](index.html). These Markdown files rema
 Install the package globally, register the plugin, then verify the CLI:
 
 ```bash
-npm install -g opencode-code-archaeology && opencode-code-archaeology install && opencode-code-archaeology doctor
+npm install -g opencode-code-archaeology@2.2.0 && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 Or tell OpenCode:
 
 ```text
-Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
+Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0
 ```
 
 Restart OpenCode in the repository you want to inspect and start with the non-destructive default command:

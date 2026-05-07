@@ -12,7 +12,7 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation. I
 Paste this into OpenCode if you want the agent to install and verify the plugin for you:
 
 ```text
-Fetch and follow instructions from https://raw.githubusercontent.com/Maleick/Code-Archaeology/refs/heads/main/INSTALL.md
+Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0
 ```
 
 ## Prerequisites
@@ -30,7 +30,7 @@ Add Code Archaeology to your `opencode.json` plugin array:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git"
+    "opencode-code-archaeology@2.2.0"
   ]
 }
 ```
@@ -51,7 +51,7 @@ Restart OpenCode after editing the configuration. The command family should then
 ### 1. Install Code Archaeology CLI
 
 ```bash
-npm install -g opencode-code-archaeology
+npm install -g opencode-code-archaeology@2.2.0
 ```
 
 ### 2. Setup Hermes Runtime
@@ -85,7 +85,7 @@ See `skills/hermes/INTEGRATION.md` for full Hermes integration details.
 If you prefer a global package install:
 
 ```bash
-npm install -g opencode-code-archaeology
+npm install -g opencode-code-archaeology@2.2.0
 opencode-code-archaeology install
 opencode-code-archaeology doctor
 opencode-code-archaeology version
@@ -102,8 +102,8 @@ Then restart OpenCode and run:
 If your environment supports one-time package execution through Bun:
 
 ```bash
-bunx opencode-code-archaeology install
-bunx opencode-code-archaeology doctor
+bunx opencode-code-archaeology@2.2.0 install
+bunx opencode-code-archaeology@2.2.0 doctor
 ```
 
 Use the plugin-array install for normal OpenCode usage.
@@ -147,12 +147,12 @@ The default survey chain should create `.archaeology/` reports without modifying
 
 ## Updating
 
-For plugin-array installs, update through your OpenCode package manager flow, then restart OpenCode. If your setup caches git plugins, clear the cached plugin package and let OpenCode reinstall it.
+For plugin-array installs, update by changing the package version to a reviewed npm release, then restart OpenCode. Do not point OpenCode at a mutable Git branch such as `main` for automatic updates.
 
 For npm global installs:
 
 ```bash
-npm install -g opencode-code-archaeology@latest
+npm install -g opencode-code-archaeology@2.2.0
 npm list -g opencode-code-archaeology --depth=0
 ```
 
@@ -163,7 +163,7 @@ npm list -g opencode-code-archaeology --depth=0
 - Confirm `opencode.json` is valid JSON.
 - Confirm the plugin entry is in the top-level `plugin` array.
 - Restart OpenCode after changing the config.
-- Check that Git can reach `https://github.com/Maleick/Code-Archaeology.git`.
+- Check that npm can resolve the pinned `opencode-code-archaeology` release.
 
 ### Commands Not Found (OpenCode)
 
