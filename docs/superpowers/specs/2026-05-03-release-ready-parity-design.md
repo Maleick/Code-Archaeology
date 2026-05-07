@@ -35,7 +35,7 @@ The README should follow the pattern proven by AutoShip and AutoResearch:
 Root `INSTALL.md` should mirror the Superpowers install-hand-off style:
 
 ```text
-Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0
+Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0 by opening https://unpkg.com/opencode-code-archaeology@2.2.0/INSTALL.md
 ```
 
 The document should include:
