@@ -61,7 +61,7 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 Paste this handoff into your agent:
 
 ```text
-Fetch and follow instructions from the versioned INSTALL.md shipped with opencode-code-archaeology@2.2.0
+Run `npm pack opencode-code-archaeology@2.2.0`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
 ```
 
 Recommended plugin install in `opencode.json`:
