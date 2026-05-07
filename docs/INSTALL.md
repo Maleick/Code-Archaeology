@@ -17,7 +17,7 @@ Add Code Archaeology to the top-level `plugin` array in `opencode.json`:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git"
+    "opencode-code-archaeology@2.2.0"
   ]
 }
 ```
@@ -38,7 +38,7 @@ Restart OpenCode after editing the configuration. The command family should then
 Use the npm package when you want the CLI installer and diagnostics:
 
 ```bash
-npm install -g opencode-code-archaeology
+npm install -g opencode-code-archaeology@2.2.0
 opencode-code-archaeology install
 opencode-code-archaeology doctor
 opencode-code-archaeology version
@@ -55,7 +55,7 @@ Then restart OpenCode and run:
 Install the CLI globally so Hermes can invoke Code Archaeology commands. To initialize Hermes runtime metadata, run the hook from a local clone or from the unpacked package contents:
 
 ```bash
-npm install -g opencode-code-archaeology
+npm install -g opencode-code-archaeology@2.2.0
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
 ```
@@ -103,12 +103,12 @@ The default survey chain should create `.archaeology/` reports without modifying
 
 ## Updating
 
-For plugin-array installs, update through your OpenCode package manager flow, then restart OpenCode. If your setup caches Git plugins, clear the cached `opencode-code-archaeology` package and let OpenCode reinstall it.
+For plugin-array installs, update by changing the package version to a reviewed npm release, then restart OpenCode. Do not point OpenCode at a mutable Git branch such as `main` for automatic updates.
 
 For npm global installs:
 
 ```bash
-npm install -g opencode-code-archaeology@latest
+npm install -g opencode-code-archaeology@2.2.0
 npm list -g opencode-code-archaeology --depth=0
 opencode-code-archaeology doctor
 ```
@@ -120,7 +120,7 @@ opencode-code-archaeology doctor
 - Confirm `opencode.json` is valid JSON.
 - Confirm the package entry is in the top-level `plugin` array, not `plugins`.
 - Restart OpenCode after changing configuration.
-- Confirm Git can reach `https://github.com/Maleick/Code-Archaeology.git`.
+- Confirm npm can resolve the pinned `opencode-code-archaeology` release.
 
 ### Commands Not Found
 

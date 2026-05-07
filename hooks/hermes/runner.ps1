@@ -6,6 +6,11 @@ $REPO_ROOT = Resolve-Path "$SCRIPT_DIR/../.." | Select-Object -ExpandProperty Pa
 $ARCHAEOLOGY_DIR = "$REPO_ROOT/.archaeology"
 $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 
+# Restore mode can execute operator-provided verification commands. Keep the
+# authorization outside repository-controlled files so a malicious checkout
+# cannot enable unattended command execution by shipping .archaeology state.
+$RESTORE_APPROVAL_ENV = "HERMES_RESTORE_APPROVED"
+
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR" | Out-Null
 
 function Block-Session {
@@ -24,6 +29,33 @@ function Block-Session {
         $session | ConvertTo-Json -Depth 10 | Set-Content "$SESSION_FILE" -Encoding UTF8
     }
     exit 1
+}
+
+function Read-SessionString {
+    param([object]$Session, [string]$Key)
+    if (!($Session.PSObject.Properties[$Key]) -or !($Session.$Key -is [string]) -or [string]::IsNullOrWhiteSpace($Session.$Key)) {
+        Block-Session -Reason "invalid session field: $Key" -Message "Invalid Hermes session field: $Key"
+    }
+    return $Session.$Key
+}
+
+function Require-RestoreApproval {
+    if ([Environment]::GetEnvironmentVariable($RESTORE_APPROVAL_ENV) -ne "1") {
+        Block-Session `
+            -Reason "restore mode requires $RESTORE_APPROVAL_ENV=1" `
+            -Message "Hermes restore mode is disabled until the operator sets $RESTORE_APPROVAL_ENV=1 outside session.json"
+    }
+}
+
+function Validate-BranchName {
+    param([string]$Branch)
+    if ([string]::IsNullOrWhiteSpace($Branch) -or $Branch.StartsWith("-") -or $Branch -match "\s") {
+        Block-Session -Reason "invalid branch_name" -Message "Invalid Hermes branch_name: $Branch"
+    }
+    git check-ref-format --branch "$Branch" *> $null
+    if ($LASTEXITCODE -ne 0) {
+        Block-Session -Reason "invalid branch_name" -Message "Invalid Hermes branch_name: $Branch"
+    }
 }
 
 # Phase definitions (fixed order)
@@ -94,21 +126,22 @@ $total_phases = $PHASES.Count
 Write-Host "=== Code Archaeology Hermes Runner ==="
 Write-Host "Phase $phase_number/$total_phases: $current_phase"
 $session = Get-Content "$SESSION_FILE" -Raw | ConvertFrom-Json
-Write-Host "Mode: $($session.mode)"
+Write-Host "Mode: $(Read-SessionString -Session $session -Key 'mode')"
 Write-Host ""
 
 # Run the phase
 Set-Location "$REPO_ROOT"
 
 # Create branch if needed
-$branch = $session.branch_name
+$branch = Read-SessionString -Session $session -Key "branch_name"
+Validate-BranchName -Branch $branch
 git checkout -b "$branch" 2>$null
 if (-not $?) {
     git checkout "$branch"
 }
 
 # Execute phase based on mode
-$mode = $session.mode
+$mode = Read-SessionString -Session $session -Key "mode"
 
 if ($mode -eq "survey") {
     Write-Host "Running SURVEY for phase $current_phase..."
@@ -171,13 +204,12 @@ if ($mode -eq "survey") {
     Write-Host "Mock patch written: $patch_file"
 
 } elseif ($mode -eq "restore") {
+    Require-RestoreApproval
     Write-Host "Running RESTORE for phase $current_phase..."
     # Apply approved changes (test-gated)
 
-    # Do not source commands from session.json because that repository-local file
-    # may be attacker-controlled in untrusted repos.
-    $test_cmd = if ($env:CODE_ARCHAEOLOGY_TEST_COMMAND) { $env:CODE_ARCHAEOLOGY_TEST_COMMAND } else { "npm test" }
-    $typecheck_cmd = if ($env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND) { $env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND } else { "npx tsc --noEmit" }
+    $test_cmd = Read-SessionString -Session $session -Key "test_command"
+    $typecheck_cmd = Read-SessionString -Session $session -Key "typecheck_command"
 
     Write-Host "Running pre-restore verification..."
     try {
@@ -240,6 +272,8 @@ if ($mode -eq "survey") {
     }
 
     Write-Host "Post-restore verification passed. Changes kept."
+} else {
+    Block-Session -Reason "unknown mode: $mode" -Message "Unknown Hermes mode: $mode"
 }
 
 # Update session: mark phase complete, advance to next
