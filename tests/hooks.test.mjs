@@ -84,6 +84,7 @@ test("Hermes runner does not follow predictable session temp symlinks when block
     const session = JSON.parse(await readFile(sessionPath, "utf8"));
     assert.equal(await readFile(victim, "utf8"), "do not overwrite\n");
     assert.equal(sessionStat.isSymbolicLink(), false);
+    assert.equal(sessionStat.isFile(), true);
     assert.equal(session.status, "blocked");
     assert.equal(session.flags.blocked_reason, "unknown phase: unknown-phase");
   } finally {
