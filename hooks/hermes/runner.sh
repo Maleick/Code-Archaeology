@@ -9,14 +9,25 @@ SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
 
 mkdir -p "$ARCHAEOLOGY_DIR"
 
+write_session_jq() {
+  local tmp
+  tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX") || return 1
+
+  if jq "$@" "$SESSION_FILE" > "$tmp"; then
+    mv -f "$tmp" "$SESSION_FILE"
+  else
+    rm -f "$tmp"
+    return 1
+  fi
+}
+
 block_session() {
   local reason="$1"
   local message="${2:-$reason}"
   echo "ERROR: $message" >&2
   if command -v jq >/dev/null 2>&1 && [[ -f "$SESSION_FILE" ]]; then
-    jq --arg reason "$reason" \
-      '.status = "blocked" | .flags = (.flags // {}) | .flags.blocked_reason = $reason' \
-      "$SESSION_FILE" > "$SESSION_FILE.tmp" && mv "$SESSION_FILE.tmp" "$SESSION_FILE"
+    write_session_jq --arg reason "$reason" \
+      '.status = "blocked" | .flags = (.flags // {}) | .flags.blocked_reason = $reason' || true
   fi
   exit 1
 }
@@ -193,13 +204,13 @@ elif [[ "$mode" == "restore" ]]; then
   echo "Running pre-restore verification..."
   if ! bash -c "$test_cmd" 2>/dev/null; then
     echo "ERROR: Tests failed before restore. Stopping."
-    jq '.status = "blocked" | .flags.blocked_reason = "tests failed before restore"' "$SESSION_FILE" > tmp.json && mv tmp.json "$SESSION_FILE"
+    write_session_jq '.status = "blocked" | .flags.blocked_reason = "tests failed before restore"' || true
     exit 1
   fi
   
   if ! bash -c "$typecheck_cmd" 2>/dev/null; then
     echo "ERROR: Typecheck failed before restore. Stopping."
-    jq '.status = "blocked" | .flags.blocked_reason = "typecheck failed before restore"' "$SESSION_FILE" > tmp.json && mv tmp.json "$SESSION_FILE"
+    write_session_jq '.status = "blocked" | .flags.blocked_reason = "typecheck failed before restore"' || true
     exit 1
   fi
   
@@ -211,14 +222,14 @@ elif [[ "$mode" == "restore" ]]; then
   if ! bash -c "$test_cmd" 2>/dev/null; then
     echo "ERROR: Tests failed after restore. Reverting..."
     git reset --hard HEAD
-    jq '.status = "blocked" | .flags.blocked_reason = "tests failed after restore"' "$SESSION_FILE" > tmp.json && mv tmp.json "$SESSION_FILE"
+    write_session_jq '.status = "blocked" | .flags.blocked_reason = "tests failed after restore"' || true
     exit 1
   fi
   
   if ! bash -c "$typecheck_cmd" 2>/dev/null; then
     echo "ERROR: Typecheck failed after restore. Reverting..."
     git reset --hard HEAD
-    jq '.status = "blocked" | .flags.blocked_reason = "typecheck failed after restore"' "$SESSION_FILE" > tmp.json && mv tmp.json "$SESSION_FILE"
+    write_session_jq '.status = "blocked" | .flags.blocked_reason = "typecheck failed after restore"' || true
     exit 1
   fi
   
@@ -238,9 +249,8 @@ if [[ $phase_idx -lt $((${#PHASES[@]} - 1)) ]]; then
   next_phase="${PHASES[$((phase_idx + 1))]}"
 fi
 
-jq --arg completed "$completed" --arg next "$next_phase" \
-  '.completed_phases = ($completed | split(",")) | .current_phase = $next' \
-  "$SESSION_FILE" > tmp.json && mv tmp.json "$SESSION_FILE"
+write_session_jq --arg completed "$completed" --arg next "$next_phase" \
+  '.completed_phases = ($completed | split(",")) | .current_phase = $next'
 
 if [[ -n "$next_phase" ]]; then
   echo ""
@@ -250,5 +260,5 @@ else
   echo ""
   echo "=== ALL PHASES COMPLETE ==="
   echo "Final catalog: $ARCHAEOLOGY_DIR/FINAL_CATALOG.md"
-  jq '.status = "complete"' "$SESSION_FILE" > tmp.json && mv tmp.json "$SESSION_FILE"
+  write_session_jq '.status = "complete"'
 fi
