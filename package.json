@@ -1,6 +1,6 @@
 {
   "name": "opencode-code-archaeology",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Excavate, catalog, and restore a codebase by removing accumulated sediment—dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop.",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,3 +1,10 @@
+## [2.2.4](https://github.com/Maleick/Code-Archaeology/compare/v2.2.3...v2.2.4) (2026-05-07)
+
+
+### Bug Fixes
+
+* configure workflow git default branch ([#17](https://github.com/Maleick/Code-Archaeology/issues/17)) ([aa81fe6](https://github.com/Maleick/Code-Archaeology/commit/aa81fe66033dc9376b2aecdd3c522994bc4e270f))
+
 ## [2.2.3](https://github.com/Maleick/Code-Archaeology/compare/v2.2.2...v2.2.3) (2026-05-07)
 
 
