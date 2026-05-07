@@ -8,6 +8,65 @@ $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR" | Out-Null
 
+function Split-CommandLine {
+    param([Parameter(Mandatory=$true)][string]$CommandLine)
+
+    $tokens = [System.Collections.Generic.List[string]]::new()
+    $current = [System.Text.StringBuilder]::new()
+    $inSingleQuote = $false
+    $inDoubleQuote = $false
+
+    for ($i = 0; $i -lt $CommandLine.Length; $i++) {
+        $char = $CommandLine[$i]
+        if ($char -eq "'" -and -not $inDoubleQuote) {
+            $inSingleQuote = -not $inSingleQuote
+            continue
+        }
+        if ($char -eq '"' -and -not $inSingleQuote) {
+            $inDoubleQuote = -not $inDoubleQuote
+            continue
+        }
+        if ([char]::IsWhiteSpace($char) -and -not $inSingleQuote -and -not $inDoubleQuote) {
+            if ($current.Length -gt 0) {
+                $tokens.Add($current.ToString())
+                $null = $current.Clear()
+            }
+            continue
+        }
+        $null = $current.Append($char)
+    }
+
+    if ($inSingleQuote -or $inDoubleQuote) {
+        throw "Unterminated quote in command: $CommandLine"
+    }
+    if ($current.Length -gt 0) {
+        $tokens.Add($current.ToString())
+    }
+    return $tokens.ToArray()
+}
+
+function Invoke-CheckedCommand {
+    param([Parameter(Mandatory=$true)][string]$CommandLine)
+
+    [string[]]$parts = @(Split-CommandLine -CommandLine $CommandLine)
+    if ($parts.Count -eq 0) {
+        throw "Empty command"
+    }
+
+    $command = $parts[0]
+    $arguments = @()
+    if ($parts.Count -gt 1) {
+        $arguments = $parts[1..($parts.Count - 1)]
+    }
+
+    $global:LASTEXITCODE = 0
+    & $command @arguments
+    $exitCode = if ($LASTEXITCODE -ne $null) { $LASTEXITCODE } elseif ($?) { 0 } else { 1 }
+    if ($exitCode -ne 0) {
+        throw "Command failed with exit code $exitCode: $CommandLine"
+    }
+}
+
 function Block-Session {
     param(
         [string]$Reason,
@@ -174,12 +233,22 @@ if ($mode -eq "survey") {
     Write-Host "Running RESTORE for phase $current_phase..."
     # Apply approved changes (test-gated)
 
-    $test_cmd = $session.test_command
-    $typecheck_cmd = $session.typecheck_command
+    $test_cmd = "npm test"
+    $typecheck_cmd = "npx tsc --noEmit"
+    if ($env:CODE_ARCHAEOLOGY_TRUST_SESSION_COMMANDS -eq "1") {
+        if ($session.test_command) {
+            $test_cmd = $session.test_command
+        }
+        if ($session.typecheck_command) {
+            $typecheck_cmd = $session.typecheck_command
+        }
+    } elseif ($session.test_command -or $session.typecheck_command) {
+        Write-Warning "Ignoring test/typecheck commands from session.json. Set CODE_ARCHAEOLOGY_TRUST_SESSION_COMMANDS=1 to opt in."
+    }
 
     Write-Host "Running pre-restore verification..."
     try {
-        Invoke-Expression $test_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $test_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Tests failed before restore. Stopping."
         $session.status = "blocked"
@@ -192,7 +261,7 @@ if ($mode -eq "survey") {
     }
 
     try {
-        Invoke-Expression $typecheck_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $typecheck_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Typecheck failed before restore. Stopping."
         $session.status = "blocked"
@@ -210,7 +279,7 @@ if ($mode -eq "survey") {
     # Run tests after changes
     Write-Host "Running post-restore verification..."
     try {
-        Invoke-Expression $test_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $test_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Tests failed after restore. Reverting..."
         git reset --hard HEAD
@@ -224,7 +293,7 @@ if ($mode -eq "survey") {
     }
 
     try {
-        Invoke-Expression $typecheck_cmd 2>$null | Out-Default
+        Invoke-CheckedCommand -CommandLine $typecheck_cmd 2>$null | Out-Default
     } catch {
         Write-Error "ERROR: Typecheck failed after restore. Reverting..."
         git reset --hard HEAD
