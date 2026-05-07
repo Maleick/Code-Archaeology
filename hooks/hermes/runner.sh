@@ -186,9 +186,10 @@ elif [[ "$mode" == "restore" ]]; then
   echo "Running RESTORE for phase $current_phase..."
   # Apply approved changes (test-gated)
   
-  # Run tests before changes
-  test_cmd=$(jq -r '.test_command' "$SESSION_FILE")
-  typecheck_cmd=$(jq -r '.typecheck_command' "$SESSION_FILE")
+  # Run tests before changes. Do not source commands from session.json because
+  # that repository-local file may be attacker-controlled in untrusted repos.
+  test_cmd="${CODE_ARCHAEOLOGY_TEST_COMMAND:-npm test}"
+  typecheck_cmd="${CODE_ARCHAEOLOGY_TYPECHECK_COMMAND:-npx tsc --noEmit}"
   
   echo "Running pre-restore verification..."
   if ! bash -c "$test_cmd" 2>/dev/null; then

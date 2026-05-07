@@ -51,8 +51,8 @@ Run: /code-archaeology
 | `language` | `typescript` | Primary language |
 | `mode` | `survey` | `survey`, `excavate`, or `restore` |
 | `strict_mode` | `false` | Auto-restore medium-confidence findings |
-| `test_command` | `npm test` | Test runner command |
-| `typecheck_command` | `npx tsc --noEmit` | Type check command |
+| `test_command` | `npm test` | Recorded session default only; verification uses `CODE_ARCHAEOLOGY_TEST_COMMAND` for operator-approved overrides |
+| `typecheck_command` | `npx tsc --noEmit` | Recorded session default only; verification uses `CODE_ARCHAEOLOGY_TYPECHECK_COMMAND` for operator-approved overrides |
 | `branch_name` | `refactor/archaeology` | Git branch to create |
 
 ## Requirements

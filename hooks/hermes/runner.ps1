@@ -174,8 +174,10 @@ if ($mode -eq "survey") {
     Write-Host "Running RESTORE for phase $current_phase..."
     # Apply approved changes (test-gated)
 
-    $test_cmd = $session.test_command
-    $typecheck_cmd = $session.typecheck_command
+    # Do not source commands from session.json because that repository-local file
+    # may be attacker-controlled in untrusted repos.
+    $test_cmd = if ($env:CODE_ARCHAEOLOGY_TEST_COMMAND) { $env:CODE_ARCHAEOLOGY_TEST_COMMAND } else { "npm test" }
+    $typecheck_cmd = if ($env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND) { $env:CODE_ARCHAEOLOGY_TYPECHECK_COMMAND } else { "npx tsc --noEmit" }
 
     Write-Host "Running pre-restore verification..."
     try {
