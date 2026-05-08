@@ -26,6 +26,7 @@ coverage/
 .autoresearch/
 .superpowers/
 HERMES_PROMPT.md
+disk/
 
 # Worktrees
 .worktrees/

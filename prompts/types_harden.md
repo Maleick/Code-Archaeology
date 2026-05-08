@@ -42,6 +42,8 @@ Write to `.archaeology/expedition5-report.md`:
   - Replace MEDIUM confidence only if `strict_mode == true`
   - NEVER replace LOW confidence types—flag for human review
   - Run type checker after each file—stop on errors
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER use `any` to "fix" a complex type—use proper typing

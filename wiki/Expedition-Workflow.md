@@ -22,8 +22,9 @@ Code Archaeology runs phases in a fixed order so later changes are based on earl
 | `survey` | Reports only; no source edits. |
 | `excavate` | Reports plus mock patches in `.archaeology/patches/`. |
 | `restore` | Applies approved changes with verification gates. |
+| `yolo` | Unattended restore; applies HIGH + MEDIUM confidence findings with `strict_mode` enabled. |
 
-Use `/code-archaeology-restore` explicitly when you are ready to apply changes. The default `/code-archaeology` command remains survey-only and writes reports under `.archaeology/`.
+Use `/code-archaeology-restore` explicitly for reviewed changes or `/code-archaeology --yolo` for one-shot unattended restoration. The default `/code-archaeology` command remains survey-only and writes reports under `.archaeology/`.
 
 ## Local Artifacts
 

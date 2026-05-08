@@ -21,9 +21,11 @@ Restart OpenCode. Commands should be available inside a Git repository:
 /code-archaeology-survey
 /code-archaeology-excavate
 /code-archaeology-restore
+/code-archaeology --yolo
 ```
 
 `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
+`/code-archaeology --yolo` runs full restoration in one shot with `strict_mode` enabled.
 
 ## npm CLI Path
 

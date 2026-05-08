@@ -7,7 +7,7 @@ This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recomme
 - OpenCode installed and available in your shell.
 - Node.js 18 or newer with npm.
 - Git installed and available in your shell.
-- A target repository with tests or type checks before running `restore` mode.
+- A target repository with tests or type checks before running `restore` or `yolo` mode.
 - For Hermes: Hermes Agent CLI or an active Hermes session.
 
 ## Recommended OpenCode Plugin Install
@@ -29,9 +29,11 @@ Restart OpenCode after editing the configuration. The command family should then
 /code-archaeology-survey
 /code-archaeology-excavate
 /code-archaeology-restore
+/code-archaeology --yolo
 ```
 
 `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
+`/code-archaeology --yolo` runs full restoration in one shot with `strict_mode` enabled.
 
 ## npm Global Install
 

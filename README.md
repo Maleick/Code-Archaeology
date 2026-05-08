@@ -111,6 +111,7 @@ Run the command family from inside the repository you want to inspect:
 
 ```text
 /code-archaeology
+/code-archaeology --yolo
 ```
 
 `/code-archaeology` runs the full 10-phase survey chain without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Review the reports, then choose whether to generate mock patches or apply approved changes:
@@ -120,6 +121,8 @@ Run the command family from inside the repository you want to inspect:
 /code-archaeology-excavate
 /code-archaeology-restore
 ```
+
+`--yolo` uses the full restore workflow in one shot (`yolo` mode), applying `HIGH` + `MEDIUM` confidence findings automatically.
 
 ### Hermes Agent
 
@@ -173,7 +176,7 @@ flowchart LR
 ```
 
 - `survey` is the default and writes reports only.
-- `restore` modifies code and should run only after reports are reviewed.
+- `restore` and `yolo` modify code and should run only after reports are reviewed; `yolo` applies `MEDIUM` confidence fixes with no review handoff in one pass.
 - `.archaeology/` is local runtime state and should not be committed.
 - Work is isolated to a configurable branch, `refactor/archaeology` by default.
 - Tests and type checks gate each restore phase.
@@ -187,6 +190,7 @@ flowchart LR
 | Command | Purpose | File changes |
 | --- | --- | --- |
 | `/code-archaeology` | Run the full 10-phase survey chain without per-phase prompts. | None outside `.archaeology/`. |
+| `/code-archaeology --yolo` | Run the full 10-phase chain in unattended restore mode. | Yes, test-gated. |
 | `/code-archaeology-survey` | Generate site reports for review. | None outside `.archaeology/`. |
 | `/code-archaeology-excavate` | Generate reports and mock patches. | None outside `.archaeology/patches/`. |
 | `/code-archaeology-restore` | Apply approved high-confidence changes. | Yes, test-gated. |
@@ -206,7 +210,8 @@ flowchart LR
 | --- | --- | --- | --- |
 | `repo_path` | `.` | Target repository to excavate. | Set in `session.json` before first cron run. |
 | `language` | `typescript` | Primary language for tooling selection. | Same |
-| `mode` | `survey` | `survey`, `excavate`, or `restore`. | Change in `session.json` to switch modes. |
+| `mode` | `survey` | `survey`, `excavate`, `restore`, or `yolo`. | Change in `session.json` to switch modes. |
+| `yolo` | `false` | Force unattended `restore` + `strict_mode` behavior in one-shot mode. | Not implemented for Hermes by default. |
 | `strict_mode` | `false` | When true, restore may also apply medium-confidence findings. | Same |
 | `test_command` | `npm test` | Recorded session default only; verification hooks do not execute repository-local command values. Use `CODE_ARCHAEOLOGY_TEST_COMMAND` to approve an override for the current process. | Same |
 | `typecheck_command` | `npx tsc --noEmit` | Recorded session default only; verification hooks do not execute repository-local command values. Use `CODE_ARCHAEOLOGY_TYPECHECK_COMMAND` to approve an override for the current process. | Same |

@@ -1,3 +1,9 @@
+## Unreleased
+
+### Features
+
+* add Hermes integration docs coverage for `yolo` and explicit docs smoke coverage for `--yolo` across wiki/INTEGRATION pages
+
 ## [2.2.6](https://github.com/Maleick/Code-Archaeology/compare/v2.2.5...v2.2.6) (2026-05-07)
 
 

@@ -43,6 +43,8 @@ Write to `.archaeology/expedition7-report.md`:
   - Add proper logging or propagation
   - NEVER remove try/catch from I/O or external input boundaries
   - Run tests after each change
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER remove try/catch from I/O operations (file read, network request, DB query)

@@ -39,6 +39,8 @@ Write to `.archaeology/expedition8-report.md`:
   - NEVER remove meaningful comments explaining complex logic
   - NEVER change code semantics during cleanup
   - Run tests after cleanup
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER remove comments explaining WHY (only remove WHAT comments that state the obvious)

@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isWindows, getHookExtension, getShellCommand } from "./platform.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,7 +10,31 @@ export const id = "code-archaeology";
 export const repoRoot = packageRoot;
 
 const versionPath = resolve(packageRoot, "VERSION");
-export const version = readFileSync(versionPath, "utf8").trim();
+const packageJsonPath = resolve(packageRoot, "package.json");
+
+function readVersionText(path: string): string {
+  const value = readFileSync(path, "utf8").trim();
+  return value.length > 0 ? value : "unknown";
+}
+
+function resolveVersion(): string {
+  try {
+    return readVersionText(versionPath);
+  } catch {
+    try {
+      const packageVersion = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
+      if (typeof packageVersion === "string" && packageVersion.length > 0) {
+        return packageVersion;
+      }
+    } catch {
+      return "0.0.0";
+    }
+  }
+
+  return "0.0.0";
+}
+
+export const version = resolveVersion();
 
 type OpenCodeConfig = {
   command?: Record<string, { template: string; description?: string }>;
@@ -28,7 +51,7 @@ const commandFiles = [
 ] as const;
 
 function parseCommand(name: string): { template: string; description?: string } {
-  const template = readFileSync(resolve(packageRoot, "commands", `${name}.md`), "utf8");
+  const template = readFileSync(resolve(packageRoot, "commands", `${name}.md`), "utf8").replace(/\r\n/g, "\n");
   const match = template.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) {
     return { template };

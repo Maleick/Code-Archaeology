@@ -13,13 +13,21 @@ trigger:
 
 Excavate, catalog, and restore a codebase by removing accumulated sediment: dead code, legacy fallbacks, circular dependencies, weak types, and defensive programming slop. Produces human-reviewable site reports before any artifacts are disturbed. Non-destructive by default.
 
-By default, `/code-archaeology` runs the full 10-phase survey chain without stopping for a prompt between phases. It generates the complete report set in `.archaeology/` and makes zero source-code changes. To apply changes after review, use `/code-archaeology-restore` explicitly.
+By default, `/code-archaeology` runs the full 10-phase survey chain without stopping for a prompt between phases. It generates the complete report set in `.archaeology/` and makes zero source-code changes. To apply changes after review, use `/code-archaeology-restore` explicitly. To run full unattended restoration, use `--yolo`.
 
 ## Quick Start
 
 ```
-Run: /code-archaeology
+/code-archaeology
+/code-archaeology --yolo
 ```
+
+### YOLO mode
+
+`--yolo` runs the full expedition in an unattended restore flow with `strict_mode: true`.
+It applies `HIGH` and `MEDIUM` confidence fixes directly and runs verification between phases.
+
+Use this only in throwaway branches because it applies code changes without per-phase manual review.
 
 ## What It Does
 
@@ -49,7 +57,8 @@ Run: /code-archaeology
 |-----------|---------|-------------|
 | `repo_path` | `.` | Target repository |
 | `language` | `typescript` | Primary language |
-| `mode` | `survey` | `survey`, `excavate`, or `restore` |
+| `mode` | `survey` | `survey`, `excavate`, `restore`, or `yolo` |
+| `yolo` | `false` | If `true`, force `restore` mode with `strict_mode: true` and no manual handoff |
 | `strict_mode` | `false` | Auto-restore medium-confidence findings |
 | `test_command` | `npm test` | Recorded session default only; verification uses `CODE_ARCHAEOLOGY_TEST_COMMAND` for operator-approved overrides |
 | `typecheck_command` | `npx tsc --noEmit` | Recorded session default only; verification uses `CODE_ARCHAEOLOGY_TYPECHECK_COMMAND` for operator-approved overrides |
@@ -67,6 +76,7 @@ Run: /code-archaeology
 - **Survey mode (default)**: Zero file changes. Runs every phase and generates the full report set.
 - **Excavate mode**: Mock patches for human review. No actual modifications.
 - **Restore mode**: Applies approved changes only when explicitly requested with `/code-archaeology-restore`. Always runs tests between phases.
+- **YOLO mode (`--yolo`)**: Applies restore actions with `strict_mode` enabled and proceeds automatically without the review handoff.
 - **Branch isolation**: All work happens on `refactor/archaeology` (configurable).
 - **Test gating**: Any phase that breaks tests is automatically reverted.
 

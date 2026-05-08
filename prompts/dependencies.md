@@ -41,6 +41,8 @@ Write to `.archaeology/expedition3-report.md`:
   - Flag complex cycles for human review
   - NEVER create new abstractions that obscure the cycle—break it properly
   - Run tests after each fix
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER introduce dynamic imports just to hide a cycle—fix the architecture

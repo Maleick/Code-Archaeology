@@ -38,6 +38,8 @@ Write to `.archaeology/expedition1-report.md`:
   - NEVER remove LOW confidence artifacts
   - Run tests after each removal batch
   - Revert immediately if tests fail
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER remove code that is dynamically accessed (eval, require(variable), etc.)

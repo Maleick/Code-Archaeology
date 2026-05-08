@@ -3,6 +3,7 @@
 ## Overview
 
 Code Archaeology can run on Hermes Agent using cron-based phase execution. Each cron run executes exactly ONE expedition phase with test gates between phases.
+Hermes does not expose `/code-archaeology --yolo` directly; instead, set `mode = "yolo"` in `session.json` to apply `restore` behavior with `strict_mode` enabled.
 
 ## Architecture
 
@@ -11,7 +12,7 @@ Hermes Cron (every 15m)
   → Read .archaeology/session.json
   → Detect current phase (1 of 10)
   → Execute ONE phase:
-      survey → excavate → restore (per phase)
+      survey → excavate → restore / yolo (per phase)
   → Run test/typecheck verification
   → Keep or revert changes
   → Advance to next phase
@@ -59,6 +60,7 @@ See `skills/hermes/code-archaeology-prompt.md` for the full cron prompt.
 | `/code-archaeology-survey` | `mode = "survey"` in session.json |
 | `/code-archaeology-excavate` | `mode = "excavate"` in session.json |
 | `/code-archaeology-restore` | `mode = "restore"` in session.json |
+| `/code-archaeology --yolo` | `mode = "yolo"` in session.json |
 
 ## Session File Format
 
@@ -81,6 +83,8 @@ Hermes uses the same `.archaeology/session.json` format as OpenCode:
 }
 ```
 
+To mirror `--yolo` on Hermes, set `mode: "yolo"` and keep `strict_mode` at `true` in `session.json`.
+
 ## 10-Phase Expedition Order
 
 | # | Phase | Hermes Action |
@@ -101,6 +105,7 @@ Hermes uses the same `.archaeology/session.json` format as OpenCode:
 Same as OpenCode:
 - `survey` is default — reports only, zero edits
 - `restore` modifies code only after review
+- `yolo` applies restore behavior with strict confidence and no manual review gate
 - Tests and type checks gate each phase
 - Failed restores are automatically reverted
 - Never remove try/catch from I/O boundaries

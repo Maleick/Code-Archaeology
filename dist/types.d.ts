@@ -5,7 +5,7 @@
  * @module code-archaeology-types
  */
 /** Valid operational modes. */
-export type ArchaeologyMode = "survey" | "excavate" | "restore";
+export type ArchaeologyMode = "survey" | "excavate" | "restore" | "yolo";
 /** Supported programming languages. */
 export type TargetLanguage = "typescript" | "javascript" | "python" | "go" | "rust";
 /** Expedition phases in fixed order. */

@@ -41,6 +41,8 @@ Write to `.archaeology/expedition2-report.md`:
   - Remove MEDIUM confidence only if `strict_mode == true`
   - Update documentation to reflect removals
   - Run tests after each batch
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER remove polyfills for features still needed by supported environments
