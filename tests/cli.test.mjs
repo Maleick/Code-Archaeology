@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import test from "node:test";
+import { withPreloadModule } from "./helpers/preload.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
@@ -16,17 +17,6 @@ async function runCli(args, options = {}) {
     cwd: root,
     env: { ...process.env, ...options.env },
   });
-}
-
-async function withPreloadModule(source, callback) {
-  const dir = await mkdtemp(join(tmpdir(), "code-archaeology-cli-preload-"));
-  const preloadPath = join(dir, "preload.mjs");
-  await writeFile(preloadPath, source);
-  try {
-    return await callback(preloadPath);
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
 }
 
 test("version prints package version", async () => {
@@ -61,6 +51,7 @@ test("doctor reports core package files present", async () => {
 
 test("doctor exits non-zero and lists missing package files", async () => {
   await withPreloadModule(
+    "code-archaeology-cli-preload-",
     `import fs from "node:fs";
 import { syncBuiltinESMExports } from "node:module";
 

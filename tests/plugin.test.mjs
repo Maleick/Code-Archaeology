@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { dirname, join } from "node:path";
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import { tmpdir } from "node:os";
 import test from "node:test";
+import { withPreloadModule } from "./helpers/preload.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -41,21 +41,6 @@ async function listCommandTemplates() {
     .filter((entry) => entry.endsWith(".md"))
     .map((entry) => entry.replace(/\.md$/, ""))
     .sort();
-}
-
-async function importFreshModule(path) {
-  return import(`${pathToFileURL(path).href}?t=${Date.now()}-${Math.random()}`);
-}
-
-async function withPreloadModule(source, callback) {
-  const dir = await mkdtemp(join(tmpdir(), "code-archaeology-runtime-preload-"));
-  const preloadPath = join(dir, "preload.mjs");
-  await writeFile(preloadPath, source);
-  try {
-    return await callback(preloadPath);
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
 }
 
 function assertCommandDiscovery(commandFiles) {
@@ -189,6 +174,7 @@ test("plugin config parses CRLF command templates", async () => {
 
 test("runtime version falls back to package.json when VERSION is missing", async () => {
   await withPreloadModule(
+    "code-archaeology-runtime-preload-",
     `import fs from "node:fs";
 import { syncBuiltinESMExports } from "node:module";
 
@@ -239,6 +225,7 @@ syncBuiltinESMExports();
 
 test("runtime version falls back to 0.0.0 when VERSION and package.json are missing", async () => {
   await withPreloadModule(
+    "code-archaeology-runtime-preload-",
     `import fs from "node:fs";
 import { syncBuiltinESMExports } from "node:module";
 
@@ -286,6 +273,7 @@ syncBuiltinESMExports();
 
 test("runtime version falls back to 0.0.0 when package.json version is empty", async () => {
   await withPreloadModule(
+    "code-archaeology-runtime-preload-",
     `import fs from "node:fs";
 import { syncBuiltinESMExports } from "node:module";
 
@@ -337,6 +325,7 @@ syncBuiltinESMExports();
 test("plugin config keeps templates without frontmatter descriptions", async () => {
   const template = "# Plain command\n\nNo frontmatter here.\n";
   await withPreloadModule(
+    "code-archaeology-runtime-preload-",
     `import fs from "node:fs";
 import { syncBuiltinESMExports } from "node:module";
 
