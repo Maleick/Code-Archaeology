@@ -46,8 +46,9 @@ Before committing, pushing, or opening a PR, run a polish pass over the changed 
 ## Release Behavior
 
 - The `release.yml` workflow supports manual `workflow_dispatch` reruns.
-- Manual reruns default to `semantic-release --dry-run --no-ci` (`publish=false`) and are safe for branch validation.
-- Use `publish=true` only for an explicit publish attempt.
+- Manual reruns default to `semantic-release --dry-run --no-ci` (`publish=false`) and are useful for confirming the workflow steps run successfully.
+- Do not treat a feature-branch manual rerun as full release validation; semantic-release still only performs actual release behavior on the configured release branch (`main`).
+- Use `publish=true` only for an explicit publish attempt from the configured release branch.
 
 ## Release Notes Expectations
 
