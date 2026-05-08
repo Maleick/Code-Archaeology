@@ -67,6 +67,30 @@ test("Hermes runner initializes a valid shared session without current_phase", a
   }
 });
 
+test("Hermes runner refuses symlinked shared sessions without overwriting the target", async () => {
+  const repo = await makeHookRepo();
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "shared-session.json");
+  const victimContent = `${JSON.stringify({ version: 1, completed: false })}\n`;
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(victim, victimContent);
+    await symlink(victim, join(repo, ".archaeology", "session.json"));
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], { cwd: repo }),
+      /Refusing to use symlinked Hermes session file/,
+    );
+
+    const sessionStat = await lstat(join(repo, ".archaeology", "session.json"));
+    assert.equal(sessionStat.isSymbolicLink(), true);
+    assert.equal(await readFile(victim, "utf8"), victimContent);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+    await rm(victimDir, { recursive: true, force: true });
+  }
+});
+
 test("Hermes runner blocks malformed session state instead of advancing", async () => {
   const repo = await makeHookRepo();
   try {
