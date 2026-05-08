@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: Run full release publish (use with caution). On feature branches this can only work with explicit mainline approval and valid tokens.
+        description: Run full release publish (use with caution). Publishing is only possible when this workflow runs on main; on other refs semantic-release will be a no-op.
         required: false
         default: false
         type: boolean
