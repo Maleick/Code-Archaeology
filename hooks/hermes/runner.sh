@@ -44,6 +44,37 @@ write_session_jq() {
   fi
 }
 
+require_safe_session_path() {
+  if [[ -L "$SESSION_FILE" ]]; then
+    echo "ERROR: Refusing to use symlinked Hermes session file: $SESSION_FILE" >&2
+    exit 1
+  fi
+}
+
+initialize_session() {
+  local current_phase="$1"
+  local tmp
+  tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
+  cat > "$tmp" <<EOF
+{
+  "runtime": "hermes",
+  "status": "running",
+  "current_phase": "$current_phase",
+  "completed_phases": [],
+  "mode": "survey",
+  "repo_path": ".",
+  "language": "typescript",
+  "test_command": "npm test",
+  "typecheck_command": "npx tsc --noEmit",
+  "branch_name": "refactor/archaeology",
+  "strict_mode": false,
+  "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+  chmod 600 "$tmp" 2>/dev/null || true
+  mv -f "$tmp" "$SESSION_FILE"
+}
+
 read_session_string() {
   local key="$1"
   if ! jq -er --arg key "$key" '.[$key] | strings | select(test("\\S"))' "$SESSION_FILE" 2>/dev/null; then
@@ -70,6 +101,7 @@ validate_branch_name() {
 }
 
 require_jq
+require_safe_session_path
 
 # Phase definitions (fixed order)
 PHASES=(
@@ -95,23 +127,7 @@ fi
 
 if [[ -z "$current_phase" ]]; then
   current_phase="${PHASES[0]}"
-  # Initialize session
-  cat > "$SESSION_FILE" <<EOF
-{
-  "runtime": "hermes",
-  "status": "running",
-  "current_phase": "$current_phase",
-  "completed_phases": [],
-  "mode": "survey",
-  "repo_path": ".",
-  "language": "typescript",
-  "test_command": "npm test",
-  "typecheck_command": "npx tsc --noEmit",
-  "branch_name": "refactor/archaeology",
-  "strict_mode": false,
-  "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
+  initialize_session "$current_phase"
   echo "Initialized Hermes session. Starting phase: $current_phase"
 fi
 
