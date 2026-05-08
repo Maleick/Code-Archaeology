@@ -122,7 +122,7 @@ Manual reruns are available from GitHub Actions using `workflow_dispatch`:
 gh workflow run release.yml --ref <branch> -f publish=false
 ```
 
-This default path runs `semantic-release` in dry-run mode for fast validation on any branch. Set `publish=true` only for an explicit publish attempt.
+This default path is useful for fast validation of the workflow itself on any branch, including setup plus any build or test steps. Because `.releaserc.json` is limited to `main`, `semantic-release` will typically only perform release calculation/publishing checks for `main`; on other branches, do not treat the dry run as full release validation. Set `publish=true` only for an explicit publish attempt.
 
 If publishing fails, do not create a replacement tag unless the failure requires a new package version. Fix the issue, rerun verification, and follow npm versioning rules.
 
