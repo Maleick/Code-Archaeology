@@ -72,6 +72,7 @@ Key files:
 | `survey` | Reports only, zero file changes |
 | `excavate` | Reports + mock patches, zero file changes |
 | `restore` | Apply approved changes, test-gated |
+| `yolo` | Apply approved + medium-confidence changes immediately (`strict_mode`-style), no review handoff |
 
 ## Constraints
 

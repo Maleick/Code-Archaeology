@@ -40,6 +40,8 @@ Write to `.archaeology/expedition6-report.md`:
   - Extract MEDIUM confidence only if `strict_mode == true`
   - NEVER extract coincidental similarities—leave them inline
   - Run tests after each extraction
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER extract code into a "utils" grab bag—use domain-appropriate names

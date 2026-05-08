@@ -17,7 +17,7 @@ Code Archaeology writes operational state into `.archaeology/` in the target rep
 
 ## Restore-Mode Safety Caveat
 
-`restore` mode can modify source files. It should only run after `survey` reports are reviewed, preferably after `excavate` mock patches are reviewed, and only when the target repository has tests or type checks available. Failed restore phases should be reverted with the bundled revert hook before continuing.
+`restore` mode can modify source files. `yolo` mode can also modify source files with `strict_mode` enabled and no manual handoff. Both should only run after `survey` reports are reviewed, preferably after `excavate` mock patches are reviewed, and only when the target repository has tests or type checks available. Failed restore phases should be reverted with the bundled revert hook before continuing.
 
 The tool must not remove try/catch blocks around I/O or external input boundaries automatically, and uncertain type replacements should be flagged for human review instead of guessed.
 

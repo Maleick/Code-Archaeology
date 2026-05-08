@@ -76,7 +76,7 @@ The phase order is fixed because later cleanup depends on earlier evidence:
 9. Artifact Cleaning & Documentation
 10. Site Preservation & Final Catalog
 
-`survey` mode writes reports only. `excavate` mode writes reports plus mock patches. `restore` mode applies approved changes and must pass verification between phases.
+`survey` mode writes reports only. `excavate` mode writes reports plus mock patches. `restore` mode applies approved changes and must pass verification between phases. `yolo` mode applies the same restore sequence with `strict_mode` enabled and no manual review handoff.
 
 ## Runtime Comparison
 

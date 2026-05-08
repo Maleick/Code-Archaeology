@@ -12,7 +12,7 @@
 
 ## Restore Caveat
 
-`restore` mode can edit source files. Run it only after reviewing `survey` reports, preferably after reviewing `excavate` mock patches, and only when tests or type checks are available.
+`restore` mode can edit source files. `yolo` mode can also edit source files and applies medium-confidence fixes automatically. Run both only after reviewing `survey` reports, preferably after reviewing `excavate` mock patches, and only when tests or type checks are available.
 
 Failed restore phases should be reverted before continuing. The workflow must not remove try/catch blocks around I/O or external input boundaries automatically, and uncertain type replacements should be flagged for review.
 

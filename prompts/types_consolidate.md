@@ -39,6 +39,8 @@ Write to `.archaeology/expedition4-report.md`:
   - Update all imports to point to canonical definitions
   - Remove orphaned type definitions
   - Run type checker after each consolidation batch
+- If `mode == yolo`:
+  - Same as restore with `strict_mode == true`
 
 ## Constraints
 - NEVER merge types that have semantic differences (even if structurally similar)

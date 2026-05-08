@@ -1,6 +1,6 @@
 # Install Code Archaeology
 
-Code Archaeology is a multi-runtime plugin for systematic codebase excavation. It is non-destructive by default: `survey` mode writes reports only, while `restore` mode modifies code after review and verification.
+Code Archaeology is a multi-runtime plugin for systematic codebase excavation. It is non-destructive by default: `survey` mode writes reports only, while `restore` mode modifies code after review and verification, and `yolo` mode applies medium-confidence fixes in one step.
 
 ## Runtimes
 
@@ -19,7 +19,7 @@ Run `npm pack opencode-code-archaeology@2.2.0`, extract the resulting tarball, t
 
 - Node.js with npm, or Bun if your setup uses Bun package resolution.
 - Git installed and available in your shell.
-- A target repository with tests or type checks available before you run `restore` mode.
+- A target repository with tests or type checks available before you run `restore` or `yolo` mode.
 - For Hermes: Hermes Agent CLI or an active Hermes session.
 - **Windows**: PowerShell 5.1 or later (hooks use `.ps1` scripts on Windows).
 
@@ -42,9 +42,11 @@ Restart OpenCode after editing the configuration. The command family should then
 /code-archaeology-survey
 /code-archaeology-excavate
 /code-archaeology-restore
+/code-archaeology --yolo
 ```
 
 `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
+`/code-archaeology --yolo` runs full restoration in one shot with `strict_mode` enabled.
 
 ## Hermes Setup
 

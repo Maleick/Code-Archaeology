@@ -7,7 +7,29 @@ export const packageRoot = resolve(__dirname, "..");
 export const id = "code-archaeology";
 export const repoRoot = packageRoot;
 const versionPath = resolve(packageRoot, "VERSION");
-export const version = readFileSync(versionPath, "utf8").trim();
+const packageJsonPath = resolve(packageRoot, "package.json");
+function readVersionText(path) {
+    const value = readFileSync(path, "utf8").trim();
+    return value.length > 0 ? value : "unknown";
+}
+function resolveVersion() {
+    try {
+        return readVersionText(versionPath);
+    }
+    catch {
+        try {
+            const packageVersion = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
+            if (typeof packageVersion === "string" && packageVersion.length > 0) {
+                return packageVersion;
+            }
+        }
+        catch {
+            return "0.0.0";
+        }
+    }
+    return "0.0.0";
+}
+export const version = resolveVersion();
 const commandFiles = [
     "code-archaeology",
     "code-archaeology-survey",
@@ -15,7 +37,7 @@ const commandFiles = [
     "code-archaeology-restore",
 ];
 function parseCommand(name) {
-    const template = readFileSync(resolve(packageRoot, "commands", `${name}.md`), "utf8");
+    const template = readFileSync(resolve(packageRoot, "commands", `${name}.md`), "utf8").replace(/\r\n/g, "\n");
     const match = template.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
     if (!match) {
         return { template };

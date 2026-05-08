@@ -55,6 +55,7 @@ The expeditions MUST run in this order due to stratigraphic dependencies:
 | `survey` | Zero | All | Initial audit, management review |
 | `excavate` | Zero | All + mock patches | Pre-approval, team review |
 | `restore` | Yes (HIGH confidence) | All | Executing approved changes |
+| `yolo` | Yes (HIGH + MEDIUM confidence) | All | Unattended full restoration |
 
 With `strict_mode: true`, restore also applies MEDIUM confidence findings.
 
@@ -74,7 +75,8 @@ With `strict_mode: true`, restore also applies MEDIUM confidence findings.
 |-----------|---------|-------------|
 | `repo_path` | `.` | Target repository |
 | `language` | `typescript` | Primary language |
-| `mode` | `survey` | `survey`, `excavate`, or `restore` |
+| `mode` | `survey` | `survey`, `excavate`, `restore`, or `yolo` |
+| `yolo` | `false` | If `true`, force `mode: yolo` |
 | `strict_mode` | `false` | Auto-restore medium-confidence findings |
 | `test_command` | `npm test` | Recorded session default only; verification uses `CODE_ARCHAEOLOGY_TEST_COMMAND` for operator-approved overrides |
 | `typecheck_command` | `npx tsc --noEmit` | Recorded session default only; verification uses `CODE_ARCHAEOLOGY_TYPECHECK_COMMAND` for operator-approved overrides |
@@ -97,6 +99,9 @@ If tools are missing, the skill falls back to AST-based manual analysis.
 ```bash
 # Survey only (zero changes)
 opencode run code-archaeology --mode survey
+
+# Full unattended restore
+opencode run code-archaeology --yolo
 
 # Generate mock patches for review
 opencode run code-archaeology --mode excavate

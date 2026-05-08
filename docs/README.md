@@ -2,7 +2,7 @@
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports both **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution). It runs inside the target repository, writes local `.archaeology/` reports, and only modifies source files in `restore` mode after review and verification.
+Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports both **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution). It runs inside the target repository, writes local `.archaeology/` reports, and modifies source files in `restore` mode after review or in `yolo` mode when explicitly requested.
 
 The public landing page is [`index.html`](index.html). These Markdown files remain the detailed documentation source.
 
@@ -37,6 +37,7 @@ Restart OpenCode in the repository you want to inspect and start with the non-de
 
 ```text
 /code-archaeology
+/code-archaeology --yolo
 ```
 
 This runs the full 10-phase survey chain without per-phase prompts, writes reports under `.archaeology/`, and makes no source-code changes.
@@ -67,6 +68,6 @@ Each cron run executes exactly **one** phase. Ten phases complete in ~2.5 hours 
 
 ## Safety Warning
 
-`/code-archaeology` defaults to survey mode and writes reports only. `excavate` mode writes reports and mock patches. `restore` mode can edit source files and should only run after report review, on an isolated branch, with tests or type checks available.
+`/code-archaeology` defaults to survey mode and writes reports only. `excavate` mode writes reports and mock patches. `restore` mode can edit source files after report review, on an isolated branch, with tests or type checks available. `yolo` mode also edits source files in one shot with `strict_mode` enabled and no manual review gate.
 
 Do not commit `.archaeology/`; it is local runtime state.
