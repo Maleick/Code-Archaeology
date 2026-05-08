@@ -18,6 +18,17 @@ async function runCli(args, options = {}) {
   });
 }
 
+async function withPreloadModule(source, callback) {
+  const dir = await mkdtemp(join(tmpdir(), "code-archaeology-cli-preload-"));
+  const preloadPath = join(dir, "preload.mjs");
+  await writeFile(preloadPath, source);
+  try {
+    return await callback(preloadPath);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
 test("version prints package version", async () => {
   const { stdout } = await runCli(["version"]);
 
@@ -46,6 +57,40 @@ test("doctor reports core package files present", async () => {
   assert.match(stdout, /AGENTS\.md/);
   assert.match(stdout, /README\.md/);
   assert.match(stdout, /INSTALL\.md/);
+});
+
+test("doctor exits non-zero and lists missing package files", async () => {
+  await withPreloadModule(
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalExistsSync = fs.existsSync;
+const root = process.env.CODE_ARCHAEOLOGY_ROOT;
+
+fs.existsSync = function existsSync(path) {
+  if (typeof path === "string" && path.startsWith(root)) {
+    return false;
+  }
+  return originalExistsSync.call(this, path);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      await assert.rejects(
+        execFileAsync(process.execPath, ["--import", preloadPath, cliPath, "doctor"], {
+          cwd: root,
+          env: { ...process.env, CODE_ARCHAEOLOGY_ROOT: root },
+        }),
+        (error) => {
+          assert.equal(error.code, 1);
+          assert.match(error.stderr, /Missing Code Archaeology package files:/);
+          assert.match(error.stderr, /commands\/code-archaeology\.md/);
+          return true;
+        },
+      );
+    },
+  );
 });
 
 test("install creates opencode config with plugin entry", async () => {
@@ -143,6 +188,21 @@ test("install creates non-overwriting backups for existing config", async () => 
     const files = await readdir(configDir);
     assert.equal(await readFile(`${configPath}.bak`, "utf8"), "existing backup\n");
     assert.ok(files.some((file) => /^opencode\.json\.bak\.\d+$/.test(file)));
+  } finally {
+    await rm(configDir, { recursive: true, force: true });
+  }
+});
+
+test("install exits non-zero when existing opencode config is invalid JSON", async () => {
+  const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
+  try {
+    await writeFile(join(configDir, "opencode.json"), "{ invalid json\n");
+
+    await assert.rejects(runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } }), (error) => {
+      assert.equal(error.code, 1);
+      assert.match(error.stderr, /invalid json|Unexpected token|Expected property name/i);
+      return true;
+    });
   } finally {
     await rm(configDir, { recursive: true, force: true });
   }
