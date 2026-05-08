@@ -284,6 +284,56 @@ syncBuiltinESMExports();
   );
 });
 
+test("runtime version falls back to 0.0.0 when package.json version is empty", async () => {
+  await withPreloadModule(
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalReadFileSync = fs.readFileSync;
+const versionPath = process.env.CODE_ARCH_VERSION_PATH;
+const packageJsonPath = process.env.CODE_ARCH_PACKAGE_JSON_PATH;
+const packageJsonContent = process.env.CODE_ARCH_PACKAGE_JSON_CONTENT;
+
+fs.readFileSync = function readFileSync(path, ...args) {
+  if (path === versionPath) {
+    const error = new Error("missing VERSION");
+    error.code = "ENOENT";
+    throw error;
+  }
+  if (path === packageJsonPath) {
+    return packageJsonContent;
+  }
+  return originalReadFileSync.call(this, path, ...args);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          preloadPath,
+          "--input-type=module",
+          "--eval",
+          `import { version } from ${JSON.stringify(pathToFileURL(join(root, "dist", "runtime.js")).href)}; console.log(version);`,
+        ],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            CODE_ARCH_VERSION_PATH: join(root, "VERSION"),
+            CODE_ARCH_PACKAGE_JSON_PATH: join(root, "package.json"),
+            CODE_ARCH_PACKAGE_JSON_CONTENT: `${JSON.stringify({ version: "" })}\n`,
+          },
+        },
+      );
+
+      assert.equal(stdout.trim(), "0.0.0");
+    },
+  );
+});
+
 test("plugin config keeps templates without frontmatter descriptions", async () => {
   const template = "# Plain command\n\nNo frontmatter here.\n";
   await withPreloadModule(
