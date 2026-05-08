@@ -19,6 +19,13 @@ Use Node 20 for CI parity. Node 18 or newer is supported by the package metadata
 - Keep `.archaeology/`, `.superpowers/`, `node_modules/`, logs, secrets, and editor state out of commits.
 - Do not commit, tag, push, or publish release artifacts unless you are intentionally performing a reviewed release step.
 
+## PR Checklist
+
+- Keep `dist/` checked in only when runtime or source output changes; `dist/` is part of the published package surface and must reflect shipped behavior.
+- Add `dist/` updates in the same PR for source changes (for example: `src/`, `commands/`, `prompts/`, hooks, or `scripts/` changes).
+- Do not add or track `disk/`; it is runtime scratch space and belongs in `.gitignore`.
+- If a change is docs-only (`README`, `INSTALL`, `docs/`, `wiki/`), `dist/` updates are not required.
+
 ## Testing Commands
 
 Run the most focused checks for your change, and run the release checks before release-impacting changes are merged:
