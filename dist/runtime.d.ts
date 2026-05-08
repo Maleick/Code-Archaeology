@@ -1,6 +1,6 @@
-export declare const packageRoot: string;
+export declare const packageRoot: any;
 export declare const id = "code-archaeology";
-export declare const repoRoot: string;
+export declare const repoRoot: any;
 export declare const version: string;
 type OpenCodeConfig = {
     command?: Record<string, {
