@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { dirname, join } from "node:path";
 import { readFile, readdir, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
+import { withPreloadModule } from "./helpers/preload.mjs";
 
 const execFileAsync = promisify(execFile);
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -169,6 +170,205 @@ test("plugin config parses CRLF command templates", async () => {
     );
     assert.match(config.command["code-archaeology"].template, /^# /m);
   });
+});
+
+test("runtime version falls back to package.json when VERSION is missing", async () => {
+  await withPreloadModule(
+    "code-archaeology-runtime-preload-",
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalReadFileSync = fs.readFileSync;
+const versionPath = process.env.CODE_ARCH_VERSION_PATH;
+const packageJsonPath = process.env.CODE_ARCH_PACKAGE_JSON_PATH;
+const packageJsonContent = process.env.CODE_ARCH_PACKAGE_JSON_CONTENT;
+
+fs.readFileSync = function readFileSync(path, ...args) {
+  if (path === versionPath) {
+    const error = new Error("missing VERSION");
+    error.code = "ENOENT";
+    throw error;
+  }
+  if (path === packageJsonPath && packageJsonContent) {
+    return packageJsonContent;
+  }
+  return originalReadFileSync.call(this, path, ...args);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          preloadPath,
+          "--input-type=module",
+          "--eval",
+          `import { version } from ${JSON.stringify(pathToFileURL(join(root, "dist", "runtime.js")).href)}; console.log(version);`,
+        ],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            CODE_ARCH_VERSION_PATH: join(root, "VERSION"),
+            CODE_ARCH_PACKAGE_JSON_PATH: join(root, "package.json"),
+            CODE_ARCH_PACKAGE_JSON_CONTENT: `${JSON.stringify({ version: "9.9.9" })}\n`,
+          },
+        },
+      );
+
+      assert.equal(stdout.trim(), "9.9.9");
+    },
+  );
+});
+
+test("runtime version falls back to 0.0.0 when VERSION and package.json are missing", async () => {
+  await withPreloadModule(
+    "code-archaeology-runtime-preload-",
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalReadFileSync = fs.readFileSync;
+const missingPaths = new Set(
+  (process.env.CODE_ARCH_MISSING_PATHS || "")
+    .split(process.platform === "win32" ? ";" : ":")
+    .filter(Boolean),
+);
+
+fs.readFileSync = function readFileSync(path, ...args) {
+  if (missingPaths.has(path)) {
+    const error = new Error(\`missing \${path}\`);
+    error.code = "ENOENT";
+    throw error;
+  }
+  return originalReadFileSync.call(this, path, ...args);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          preloadPath,
+          "--input-type=module",
+          "--eval",
+          `import { version } from ${JSON.stringify(pathToFileURL(join(root, "dist", "runtime.js")).href)}; console.log(version);`,
+        ],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            CODE_ARCH_MISSING_PATHS: `${join(root, "VERSION")}:${join(root, "package.json")}`,
+          },
+        },
+      );
+
+      assert.equal(stdout.trim(), "0.0.0");
+    },
+  );
+});
+
+test("runtime version falls back to 0.0.0 when package.json version is empty", async () => {
+  await withPreloadModule(
+    "code-archaeology-runtime-preload-",
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalReadFileSync = fs.readFileSync;
+const versionPath = process.env.CODE_ARCH_VERSION_PATH;
+const packageJsonPath = process.env.CODE_ARCH_PACKAGE_JSON_PATH;
+const packageJsonContent = process.env.CODE_ARCH_PACKAGE_JSON_CONTENT;
+
+fs.readFileSync = function readFileSync(path, ...args) {
+  if (path === versionPath) {
+    const error = new Error("missing VERSION");
+    error.code = "ENOENT";
+    throw error;
+  }
+  if (path === packageJsonPath) {
+    return packageJsonContent;
+  }
+  return originalReadFileSync.call(this, path, ...args);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          preloadPath,
+          "--input-type=module",
+          "--eval",
+          `import { version } from ${JSON.stringify(pathToFileURL(join(root, "dist", "runtime.js")).href)}; console.log(version);`,
+        ],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            CODE_ARCH_VERSION_PATH: join(root, "VERSION"),
+            CODE_ARCH_PACKAGE_JSON_PATH: join(root, "package.json"),
+            CODE_ARCH_PACKAGE_JSON_CONTENT: `${JSON.stringify({ version: "" })}\n`,
+          },
+        },
+      );
+
+      assert.equal(stdout.trim(), "0.0.0");
+    },
+  );
+});
+
+test("plugin config keeps templates without frontmatter descriptions", async () => {
+  const template = "# Plain command\n\nNo frontmatter here.\n";
+  await withPreloadModule(
+    "code-archaeology-runtime-preload-",
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalReadFileSync = fs.readFileSync;
+const commandRoot = process.env.CODE_ARCH_COMMAND_ROOT;
+const commandTemplate = process.env.CODE_ARCH_COMMAND_TEMPLATE;
+
+fs.readFileSync = function readFileSync(path, ...args) {
+  if (typeof path === "string" && path.startsWith(commandRoot) && path.endsWith(".md")) {
+    return commandTemplate;
+  }
+  return originalReadFileSync.call(this, path, ...args);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          preloadPath,
+          "--input-type=module",
+          "--eval",
+          `import { codeArchaeologyPlugin } from ${JSON.stringify(pathToFileURL(join(root, "dist", "runtime.js")).href)};
+const hooks = await codeArchaeologyPlugin();
+const config = {};
+await hooks.config(config);
+console.log(JSON.stringify(config.command["code-archaeology"]));`,
+        ],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            CODE_ARCH_COMMAND_ROOT: commandDirectory,
+            CODE_ARCH_COMMAND_TEMPLATE: template,
+          },
+        },
+      );
+
+      assert.deepEqual(JSON.parse(stdout), { template });
+    },
+  );
 });
 
 test("plugin config parses all command templates from CRLF source", async () => {
