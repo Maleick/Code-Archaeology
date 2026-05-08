@@ -88,7 +88,7 @@ PHASES=(
 # Detect current phase from session file
 current_phase=""
 if [[ -f "$SESSION_FILE" ]]; then
-  if ! current_phase=$(jq -er '.current_phase // empty' "$SESSION_FILE" 2>/dev/null); then
+  if ! current_phase=$(jq -r '.current_phase // empty' "$SESSION_FILE" 2>/dev/null); then
     block_session "invalid session.json" "Invalid Hermes session file: $SESSION_FILE"
   fi
 fi

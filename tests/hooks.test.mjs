@@ -39,6 +39,34 @@ test("Hermes runner initializes a clean repository without prior setup", async (
   }
 });
 
+test("Hermes runner initializes a valid shared session without current_phase", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        version: 1,
+        config: { mode: "survey", branch_name: "refactor/archaeology" },
+        expeditions: [],
+        completed: false,
+      })}\n`,
+    );
+
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /Initialized Hermes session/);
+    assert.equal(session.runtime, "hermes");
+    assert.deepEqual(session.completed_phases, ["site-survey"]);
+    assert.equal(session.current_phase, "dead-code");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("Hermes runner blocks malformed session state instead of advancing", async () => {
   const repo = await makeHookRepo();
   try {
