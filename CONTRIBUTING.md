@@ -43,6 +43,12 @@ Before committing, pushing, or opening a PR, run a polish pass over the changed 
 - Do not include secrets, credentials, private repository contents, or full local runtime state.
 - Preserve the safety model: survey first, excavate for mock patches, restore only after review.
 
+## Release Behavior
+
+- The `release.yml` workflow supports manual `workflow_dispatch` reruns.
+- Manual reruns default to `semantic-release --dry-run --no-ci` (`publish=false`) and are safe for branch validation.
+- Use `publish=true` only for an explicit publish attempt.
+
 ## Release Notes Expectations
 
 - Add user-visible changes to `CHANGELOG.md`.
