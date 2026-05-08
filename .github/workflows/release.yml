@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: Run full release publish (use with caution). Publishing is only possible when this workflow runs on main; on other refs semantic-release will be a no-op.
+        description: Run full release publish (main only). Non-publish dispatches run validation without release credentials.
         required: false
         default: false
         type: boolean
@@ -17,7 +17,45 @@ env:
   NODE_OPTIONS: --no-deprecation
 
 jobs:
+  validate:
+    name: Validate release workflow
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Configure Git default branch
+        run: git config --global init.defaultBranch main
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Verify package
+        run: npm run verify:pack
+
+      - name: Test
+        run: npm test
+
   release:
+    name: Publish release
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish == 'true')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -59,9 +97,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.publish }}" != "true" ]; then
-            npx semantic-release --dry-run --no-ci
-          else
-            npx semantic-release
-          fi
+        run: npx semantic-release
