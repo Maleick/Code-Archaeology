@@ -116,6 +116,14 @@ Publishing is performed by `.github/workflows/release.yml` through npm trusted p
 - Workflow filename: `release.yml`
 - Environment name: leave blank unless the workflow adds a GitHub Actions `environment`
 
+Manual reruns are available from GitHub Actions using `workflow_dispatch`:
+
+```bash
+gh workflow run release.yml --ref <branch> -f publish=false
+```
+
+This default path runs `semantic-release` in dry-run mode for fast validation on any branch. Set `publish=true` only for an explicit publish attempt.
+
 If publishing fails, do not create a replacement tag unless the failure requires a new package version. Fix the issue, rerun verification, and follow npm versioning rules.
 
 ## 9. Final Checks
