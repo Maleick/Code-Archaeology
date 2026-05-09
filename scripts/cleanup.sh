@@ -32,14 +32,14 @@ done
 
 echo "Code Archaeology cleanup starting..."
 
-if [ ! -d "$ARCHAEOLOGY_DIR" ]; then
-  echo "no archaeology directory found; nothing to clean"
-  exit 0
-fi
-
 if [ -L "$ARCHAEOLOGY_DIR" ]; then
   echo "refusing to clean symlinked archaeology directory: $ARCHAEOLOGY_DIR" >&2
   exit 1
+fi
+
+if [ ! -d "$ARCHAEOLOGY_DIR" ]; then
+  echo "no archaeology directory found; nothing to clean"
+  exit 0
 fi
 
 # Clean old expedition reports (>14 days) only when explicitly requested.
