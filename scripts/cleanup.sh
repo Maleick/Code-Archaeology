@@ -32,32 +32,44 @@ done
 
 echo "Code Archaeology cleanup starting..."
 
+if [ ! -d "$ARCHAEOLOGY_DIR" ]; then
+  echo "no archaeology directory found; nothing to clean"
+  exit 0
+fi
+
+if [ -L "$ARCHAEOLOGY_DIR" ]; then
+  echo "refusing to clean symlinked archaeology directory: $ARCHAEOLOGY_DIR" >&2
+  exit 1
+fi
+
 # Clean old expedition reports (>14 days) only when explicitly requested.
 if [ "$DELETE_EXPEDITION_REPORTS" -eq 1 ]; then
-  find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'expedition*-report.md' -mtime +14 2>/dev/null | while read -r f; do
-    rm -f "$f"
-    echo "removed old report: $(basename "$f")"
-  done
+  while IFS= read -r -d '' f; do
+    rm -f -- "$f"
+    echo "removed old report: $(basename -- "$f")"
+  done < <(find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'expedition*-report.md' -mtime +14 -print0 2>/dev/null)
 else
   echo "preserving expedition reports by default; rerun with --delete-expedition-reports to remove reports older than 14 days"
 fi
 
 # Clean old excavation logs
-find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f \( -name 'excavation_log.txt' -o -name 'excavation_log-*.txt' \) -mtime +14 2>/dev/null | while read -r f; do
-  rm -f "$f"
-  echo "removed old log: $(basename "$f")"
-done
+while IFS= read -r -d '' f; do
+  rm -f -- "$f"
+  echo "removed old log: $(basename -- "$f")"
+done < <(find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f \( -name 'excavation_log.txt' -o -name 'excavation_log-*.txt' \) -mtime +14 -print0 2>/dev/null)
 
 # Clean mock patch artifacts older than 7 days
-find "$ARCHAEOLOGY_DIR/patches" -type f -name '*.patch' -mtime +7 2>/dev/null | while read -r f; do
-  rm -f "$f"
-  echo "removed old mock patch: $(basename "$f")"
-done
+if [ -d "$ARCHAEOLOGY_DIR/patches" ] && [ ! -L "$ARCHAEOLOGY_DIR/patches" ]; then
+  while IFS= read -r -d '' f; do
+    rm -f -- "$f"
+    echo "removed old mock patch: $(basename -- "$f")"
+  done < <(find "$ARCHAEOLOGY_DIR/patches" -type f -name '*.patch' -mtime +7 -print0 2>/dev/null)
+fi
 
-find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'patch-index.json' -mtime +7 2>/dev/null | while read -r f; do
-  rm -f "$f"
-  echo "removed old patch index: $(basename "$f")"
-done
+while IFS= read -r -d '' f; do
+  rm -f -- "$f"
+  echo "removed old patch index: $(basename -- "$f")"
+done < <(find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'patch-index.json' -mtime +7 -print0 2>/dev/null)
 
 # Report disk usage
 du -sh "$ARCHAEOLOGY_DIR" 2>/dev/null || true
