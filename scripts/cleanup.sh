@@ -16,7 +16,7 @@ find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'expedition*-report.md' -mtime
 done
 
 # Clean old excavation logs
-find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'excavation_log-*.txt' -mtime +14 2>/dev/null | while read -r f; do
+find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f \( -name 'excavation_log.txt' -o -name 'excavation_log-*.txt' \) -mtime +14 2>/dev/null | while read -r f; do
   rm -f "$f"
   echo "removed old log: $(basename "$f")"
 done
