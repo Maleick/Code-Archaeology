@@ -21,10 +21,15 @@ find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f \( -name 'excavation_log.txt' -o -na
   echo "removed old log: $(basename "$f")"
 done
 
-# Clean mock patches older than 7 days
-find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type d -name 'mock-patches-*' -mtime +7 2>/dev/null | while read -r dir; do
-  rm -rf "$dir"
-  echo "removed old mock patches: $(basename "$dir")"
+# Clean mock patch artifacts older than 7 days
+find "$ARCHAEOLOGY_DIR/patches" -type f -name '*.patch' -mtime +7 2>/dev/null | while read -r f; do
+  rm -f "$f"
+  echo "removed old mock patch: $(basename "$f")"
+done
+
+find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'patch-index.json' -mtime +7 2>/dev/null | while read -r f; do
+  rm -f "$f"
+  echo "removed old patch index: $(basename "$f")"
 done
 
 # Report disk usage
