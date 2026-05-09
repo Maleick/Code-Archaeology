@@ -44,32 +44,37 @@ fi
 
 # Clean old expedition reports (>14 days) only when explicitly requested.
 if [ "$DELETE_EXPEDITION_REPORTS" -eq 1 ]; then
-  while IFS= read -r -d '' f; do
+  find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'expedition*-report.md' -mtime +14 -print0 | while IFS= read -r -d '' f; do
     rm -f -- "$f"
     echo "removed old report: $(basename -- "$f")"
-  done < <(find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'expedition*-report.md' -mtime +14 -print0 2>/dev/null)
+  done
 else
   echo "preserving expedition reports by default; rerun with --delete-expedition-reports to remove reports older than 14 days"
 fi
 
 # Clean old excavation logs
-while IFS= read -r -d '' f; do
+find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f \( -name 'excavation_log.txt' -o -name 'excavation_log-*.txt' \) -mtime +14 -print0 | while IFS= read -r -d '' f; do
   rm -f -- "$f"
   echo "removed old log: $(basename -- "$f")"
-done < <(find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f \( -name 'excavation_log.txt' -o -name 'excavation_log-*.txt' \) -mtime +14 -print0 2>/dev/null)
+done
 
 # Clean mock patch artifacts older than 7 days
-if [ -d "$ARCHAEOLOGY_DIR/patches" ] && [ ! -L "$ARCHAEOLOGY_DIR/patches" ]; then
-  while IFS= read -r -d '' f; do
-    rm -f -- "$f"
-    echo "removed old mock patch: $(basename -- "$f")"
-  done < <(find "$ARCHAEOLOGY_DIR/patches" -type f -name '*.patch' -mtime +7 -print0 2>/dev/null)
+if [ -L "$ARCHAEOLOGY_DIR/patches" ]; then
+  echo "refusing to clean symlinked patches directory: $ARCHAEOLOGY_DIR/patches" >&2
+  exit 1
 fi
 
-while IFS= read -r -d '' f; do
+if [ -d "$ARCHAEOLOGY_DIR/patches" ]; then
+  find "$ARCHAEOLOGY_DIR/patches" -type f -name '*.patch' -mtime +7 -print0 | while IFS= read -r -d '' f; do
+    rm -f -- "$f"
+    echo "removed old mock patch: $(basename -- "$f")"
+  done
+fi
+
+find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'patch-index.json' -mtime +7 -print0 | while IFS= read -r -d '' f; do
   rm -f -- "$f"
   echo "removed old patch index: $(basename -- "$f")"
-done < <(find "$ARCHAEOLOGY_DIR" -maxdepth 1 -type f -name 'patch-index.json' -mtime +7 -print0 2>/dev/null)
+done
 
 # Report disk usage
 du -sh "$ARCHAEOLOGY_DIR" 2>/dev/null || true
