@@ -19,6 +19,15 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
 }
 cd "$REPO_ROOT"
 
+# ── Auto-sync: pull latest plugin code before init ──
+if [[ -z "${CODE_ARCHAEOLOGY_NO_SYNC:-}" ]]; then
+  sync_gap=$(git log --oneline HEAD..origin/main 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$sync_gap" =~ ^[0-9]+$ && "$sync_gap" -gt 0 ]]; then
+    echo "[code-archaeology-sync] $sync_gap commit(s) behind origin/main — pulling..."
+    git pull origin main >/dev/null 2>&1 || echo "[code-archaeology-sync] WARN: git pull failed, continuing with local code"
+  fi
+fi
+
 echo "Code Archaeology v${PLUGIN_VERSION} initializing..."
 
 if ! command -v jq >/dev/null 2>&1; then
