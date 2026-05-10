@@ -8,10 +8,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # ── Auto-sync: pull latest plugin code before setup ──
 if [[ -z "${CODE_ARCHAEOLOGY_NO_SYNC:-}" ]]; then
   cd "$REPO_ROOT" || exit 1
-  sync_gap=$(git log --oneline HEAD..origin/main 2>/dev/null | wc -l | tr -d ' ')
-  if [[ "$sync_gap" =~ ^[0-9]+$ && "$sync_gap" -gt 0 ]]; then
-    echo "[code-archaeology-sync] $sync_gap commit(s) behind origin/main — pulling..."
-    git pull origin main >/dev/null 2>&1 || echo "[code-archaeology-sync] WARN: git pull failed, continuing with local code"
+  # Only sync if we have a valid git remote (skip temp/policy-test repos)
+  if git rev-parse --verify HEAD >/dev/null 2>&1 && git remote get-url origin >/dev/null 2>&1; then
+    sync_gap=$(git log --oneline HEAD..origin/main 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$sync_gap" =~ ^[0-9]+$ && "$sync_gap" -gt 0 ]]; then
+      echo "[code-archaeology-sync] $sync_gap commit(s) behind origin/main — pulling..."
+      git pull origin main >/dev/null 2>&1 || echo "[code-archaeology-sync] WARN: git pull failed, continuing with local code"
+    fi
   fi
 fi
 
