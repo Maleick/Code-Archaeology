@@ -19,25 +19,6 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
 }
 cd "$REPO_ROOT"
 
-# ── Auto-sync: pull latest plugin code before init ──
-if [[ -z "${CODE_ARCHAEOLOGY_NO_SYNC:-}" ]]; then
-  # Only sync if we have a valid git remote/default branch (skip temp/policy-test repos)
-  if git rev-parse --verify HEAD >/dev/null 2>&1 && git remote get-url origin >/dev/null 2>&1; then
-    remote_ref=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)
-    remote_ref="${remote_ref:-origin/main}"
-    if git rev-parse --verify "${remote_ref}^{commit}" >/dev/null 2>&1; then
-      sync_gap=$(git log --oneline "HEAD..$remote_ref" 2>/dev/null | wc -l | tr -d ' ') || sync_gap=0
-      if [[ "$sync_gap" =~ ^[0-9]+$ && "$sync_gap" -gt 0 ]]; then
-        remote_branch="${remote_ref#origin/}"
-        echo "[code-archaeology-sync] $sync_gap commit(s) behind $remote_ref — pulling..."
-        git pull origin "$remote_branch" >/dev/null 2>&1 || echo "[code-archaeology-sync] WARN: git pull failed, continuing with local code"
-      fi
-    else
-      echo "[code-archaeology-sync] WARN: $remote_ref unavailable, continuing with local code"
-    fi
-  fi
-fi
-
 echo "Code Archaeology v${PLUGIN_VERSION} initializing..."
 
 if ! command -v jq >/dev/null 2>&1; then
