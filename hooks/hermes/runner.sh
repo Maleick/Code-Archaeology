@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# ── Auto-sync: pull latest plugin code before expedition ──
+# ── Auto-sync: pull latest plugin code before runner ──
 if [[ -z "${CODE_ARCHAEOLOGY_NO_SYNC:-}" ]]; then
   cd "$REPO_ROOT" || exit 1
   # Only sync if we have a valid git remote/default branch (skip temp/policy-test repos)
@@ -19,6 +19,8 @@ if [[ -z "${CODE_ARCHAEOLOGY_NO_SYNC:-}" ]]; then
         echo "[code-archaeology-sync] $sync_gap commit(s) behind $remote_ref — pulling..."
         git pull origin "$remote_branch" >/dev/null 2>&1 || echo "[code-archaeology-sync] WARN: git pull failed, continuing with local code"
       fi
+    else
+      echo "[code-archaeology-sync] WARN: $remote_ref unavailable, continuing with local code"
     fi
   fi
 fi

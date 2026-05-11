@@ -9,6 +9,24 @@ import test from "node:test";
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 
+test("hooks do not auto-pull remote code", async () => {
+  const hookPaths = [
+    "hooks/opencode/init.sh",
+    "hooks/opencode/verify-phase.sh",
+    "hooks/opencode/verify-package.sh",
+    "hooks/opencode/update-expedition.sh",
+    "hooks/opencode/revert-phase.sh",
+    "hooks/hermes/setup.sh",
+    "hooks/hermes/runner.sh",
+  ];
+
+  for (const hookPath of hookPaths) {
+    const source = await readFile(join(root, hookPath), "utf8");
+    assert.doesNotMatch(source, /git\s+pull/);
+    assert.doesNotMatch(source, /code-archaeology-sync/);
+  }
+});
+
 async function makeHookRepo() {
   const repo = await mkdtemp(join(tmpdir(), "code-archaeology-hooks-"));
   await cp(join(root, "hooks"), join(repo, "hooks"), { recursive: true });

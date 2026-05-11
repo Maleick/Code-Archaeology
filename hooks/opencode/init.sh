@@ -32,6 +32,8 @@ if [[ -z "${CODE_ARCHAEOLOGY_NO_SYNC:-}" ]]; then
         echo "[code-archaeology-sync] $sync_gap commit(s) behind $remote_ref — pulling..."
         git pull origin "$remote_branch" >/dev/null 2>&1 || echo "[code-archaeology-sync] WARN: git pull failed, continuing with local code"
       fi
+    else
+      echo "[code-archaeology-sync] WARN: $remote_ref unavailable, continuing with local code"
     fi
   fi
 fi
@@ -72,16 +74,16 @@ if [[ ! -f "$SESSION_FILE" ]]; then
       started_at: $now,
       updated_at: $now,
       expeditions: [
-        {phase: "survey", name: "Site Survey \u0026 Baseline", status: "pending", findings_count: 0},
+        {phase: "survey", name: "Site Survey & Baseline", status: "pending", findings_count: 0},
         {phase: "dead_code", name: "Dead Code Excavation", status: "pending", findings_count: 0},
         {phase: "legacy", name: "Legacy Stratum Removal", status: "pending", findings_count: 0},
         {phase: "dependencies", name: "Circular Dependency Cartography", status: "pending", findings_count: 0},
         {phase: "types_consolidate", name: "Type Catalog Consolidation", status: "pending", findings_count: 0},
-        {phase: "types_harden", name: "Type Restoration \u0026 Hardening", status: "pending", findings_count: 0},
+        {phase: "types_harden", name: "Type Restoration & Hardening", status: "pending", findings_count: 0},
         {phase: "dry", name: "DRY Stratification", status: "pending", findings_count: 0},
         {phase: "errors", name: "Error Handling Stratigraphy", status: "pending", findings_count: 0},
-        {phase: "polish", name: "Artifact Cleaning \u0026 Documentation", status: "pending", findings_count: 0},
-        {phase: "final_verify", name: "Site Preservation \u0026 Final Catalog", status: "pending", findings_count: 0}
+        {phase: "polish", name: "Artifact Cleaning & Documentation", status: "pending", findings_count: 0},
+        {phase: "final_verify", name: "Site Preservation & Final Catalog", status: "pending", findings_count: 0}
       ],
       total_findings: 0,
       auto_fixable_count: 0,
