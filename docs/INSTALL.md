@@ -6,7 +6,7 @@ This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recomme
 
 - OpenCode installed and available in your shell.
 - Codex installed if you want the native Codex skill runtime.
-- Node.js 18 or newer with npm.
+- Node.js 22 or newer with npm.
 - Git installed and available in your shell.
 - A target repository with tests or type checks before running `restore` or `yolo` mode.
 - For Hermes: Hermes Agent CLI or an active Hermes session.

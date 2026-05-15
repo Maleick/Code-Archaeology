@@ -220,6 +220,57 @@ test("install creates non-overwriting backups for existing config", async () => 
   }
 });
 
+test("doctor uses .ps1 file list on Windows", async () => {
+  await withPreloadModule(
+    "code-archaeology-windows-",
+    `Object.defineProperty(process, "platform", { value: "win32", configurable: true });`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(process.execPath, ["--import", preloadPath, cliPath, "doctor"], {
+        cwd: root,
+        env: { ...process.env },
+      });
+      assert.match(stdout, /Code Archaeology package files present/);
+      assert.match(stdout, /hooks\/opencode\/init\.ps1/);
+      assert.match(stdout, /hooks\/opencode\/verify-phase\.ps1/);
+      assert.match(stdout, /hooks\/hermes\/setup\.ps1/);
+      assert.doesNotMatch(stdout, /init\.sh/);
+    },
+  );
+});
+
+test("install uses HOME fallback for config path when OPENCODE_CONFIG_DIR is unset", async () => {
+  const fakeHome = await mkdtemp(join(tmpdir(), "code-archaeology-home-"));
+  try {
+    const { env } = process;
+    const stripped = { ...env, HOME: fakeHome };
+    delete stripped.OPENCODE_CONFIG_DIR;
+    await execFileAsync(process.execPath, [cliPath, "install"], { cwd: root, env: stripped });
+
+    const config = JSON.parse(
+      await readFile(join(fakeHome, ".config", "opencode", "opencode.json"), "utf8"),
+    );
+    assert.ok(Array.isArray(config.plugin));
+  } finally {
+    await rm(fakeHome, { recursive: true, force: true });
+  }
+});
+
+test("install-codex uses HOME fallback for skill path when CODEX_HOME is unset", async () => {
+  const fakeHome = await mkdtemp(join(tmpdir(), "code-archaeology-home-"));
+  try {
+    const { env } = process;
+    const stripped = { ...env, HOME: fakeHome };
+    delete stripped.CODEX_HOME;
+    await execFileAsync(process.execPath, [cliPath, "install-codex"], { cwd: root, env: stripped });
+
+    const skillPath = join(fakeHome, ".codex", "skills", "code-archaeology", "SKILL.md");
+    const skill = await readFile(skillPath, "utf8");
+    assert.match(skill, /name: code-archaeology/);
+  } finally {
+    await rm(fakeHome, { recursive: true, force: true });
+  }
+});
+
 test("install exits non-zero when existing opencode config is invalid JSON", async () => {
   const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
   try {
