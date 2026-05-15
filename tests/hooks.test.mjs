@@ -236,6 +236,32 @@ test("Hermes runner blocks restore mode until restore implementation exists", as
   }
 });
 
+test("OpenCode init hook does not follow predictable session temp symlinks when refreshing", async () => {
+  const repo = await makeHookRepo();
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "victim.txt");
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(victim, "do not overwrite\n");
+    await symlink(victim, join(repo, ".archaeology", "session.json.tmp"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({ version: 1, updated_at: "2025-01-01T00:00:00Z" })}\n`,
+    );
+
+    await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
+      cwd: repo,
+    });
+
+    assert.equal(await readFile(victim, "utf8"), "do not overwrite\n");
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(session.version, 1);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+    await rm(victimDir, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode verify hook fails when typecheck fails", async () => {
   const repo = await makeHookRepo();
   try {

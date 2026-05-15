@@ -74,10 +74,18 @@ if [[ ! -f "$SESSION_FILE" ]]; then
   echo "Initialized $SESSION_FILE"
 else
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  jq --arg now "$NOW" \
-     --arg ver "$PLUGIN_VERSION" \
-     '.updated_at = $now | .plugin_version = $ver' \
-     "$SESSION_FILE" > "$SESSION_FILE.tmp" && mv "$SESSION_FILE.tmp" "$SESSION_FILE"
+  tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
+  if jq --arg now "$NOW" \
+        --arg ver "$PLUGIN_VERSION" \
+        '.updated_at = $now | .plugin_version = $ver' \
+        "$SESSION_FILE" > "$tmp"; then
+    chmod 600 "$tmp" 2>/dev/null || true
+    mv -f "$tmp" "$SESSION_FILE"
+  else
+    rm -f "$tmp"
+    echo "Error: failed to refresh session" >&2
+    exit 1
+  fi
   echo "Refreshed $SESSION_FILE"
 fi
 
