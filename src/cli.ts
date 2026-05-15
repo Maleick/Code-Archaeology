@@ -98,9 +98,12 @@ async function install(): Promise<void> {
     config = JSON.parse(await readFile(target, "utf8"));
   }
 
+  let changed = false;
+
   const plugins = Array.isArray(config.plugin) ? config.plugin : [];
   if (!plugins.includes(PLUGIN)) {
     config.plugin = [...plugins, PLUGIN];
+    changed = true;
   }
 
   const skills = typeof config.skills === "object" && config.skills !== null ? config.skills : {};
@@ -109,9 +112,16 @@ async function install(): Promise<void> {
     : [];
   if (!paths.includes(skillsPath)) {
     config.skills = { ...skills, paths: [...paths, skillsPath] };
+    changed = true;
   }
 
   await mkdir(dirname(target), { recursive: true });
+
+  if (!changed && exists) {
+    console.log(`${target} is already up to date`);
+    return;
+  }
+
   let backup: string | undefined;
   if (exists) {
     backup = backupPath(target);
