@@ -236,6 +236,25 @@ test("Hermes runner blocks restore mode until restore implementation exists", as
   }
 });
 
+test("OpenCode verify hook fails when typecheck fails", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "opencode", "verify-phase.sh"), "restore-phase"], {
+        cwd: repo,
+        env: { ...process.env, CODE_ARCHAEOLOGY_TYPECHECK_COMMAND: "false" },
+      }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /Typecheck FAILED/);
+        return true;
+      },
+    );
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
   const repo = await makeHookRepo();
   try {

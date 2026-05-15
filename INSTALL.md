@@ -13,7 +13,7 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation. I
 Paste this into OpenCode if you want the agent to install and verify the plugin for you:
 
 ```text
-Run `npm pack opencode-code-archaeology@2.2.0`, extract the resulting tarball, then open and follow `package/INSTALL.md` from that tarball. If you need a concrete command sequence: `npm pack opencode-code-archaeology@2.2.0 && tar -xof opencode-code-archaeology-2.2.0.tgz && cat package/INSTALL.md`.
+Run `npm pack opencode-code-archaeology@2.2.6`, extract the resulting tarball, then open and follow `package/INSTALL.md` from that tarball. If you need a concrete command sequence: `npm pack opencode-code-archaeology@2.2.6 && tar -xof opencode-code-archaeology-2.2.6.tgz && cat package/INSTALL.md`.
 ```
 
 ## Prerequisites
@@ -32,7 +32,7 @@ Add Code Archaeology to your `opencode.json` plugin array:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@2.2.0"
+    "opencode-code-archaeology@2.2.6"
   ]
 }
 ```
@@ -55,7 +55,7 @@ Restart OpenCode after editing the configuration. The command family should then
 Install the package globally, then copy the Codex skill into `$CODEX_HOME/skills/code-archaeology`:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.0
+npm install -g opencode-code-archaeology@2.2.6
 opencode-code-archaeology install-codex
 ```
 
@@ -72,7 +72,7 @@ Use code-archaeology in restore mode after reviewing the reports.
 ### 1. Install Code Archaeology CLI
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.0
+npm install -g opencode-code-archaeology@2.2.6
 ```
 
 ### 2. Setup Hermes Runtime
@@ -106,7 +106,7 @@ See `skills/hermes/INTEGRATION.md` for full Hermes integration details.
 If you prefer a global package install:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.0
+npm install -g opencode-code-archaeology@2.2.6
 opencode-code-archaeology install
 opencode-code-archaeology install-codex
 opencode-code-archaeology doctor
@@ -124,8 +124,8 @@ Then restart OpenCode and run:
 If your environment supports one-time package execution through Bun:
 
 ```bash
-bunx opencode-code-archaeology@2.2.0 install
-bunx opencode-code-archaeology@2.2.0 doctor
+bunx opencode-code-archaeology@2.2.6 install
+bunx opencode-code-archaeology@2.2.6 doctor
 ```
 
 Use the plugin-array install for normal OpenCode usage.
@@ -174,7 +174,7 @@ For plugin-array installs, update by changing the package version to a reviewed 
 For npm global installs:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.0
+npm install -g opencode-code-archaeology@2.2.6
 npm list -g opencode-code-archaeology --depth=0
 ```
 
