@@ -11,6 +11,12 @@ $ERROR_MSG = if ($args[3]) { $args[3] } else { "" }
 $ARCHAEOLOGY_DIR = ".archaeology"
 $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 
+$_sessionItem = Get-Item "$SESSION_FILE" -ErrorAction SilentlyContinue
+if ($null -ne $_sessionItem -and $_sessionItem.LinkType -eq "SymbolicLink") {
+    Write-Error "Error: session.json is a symlink. Refusing to update symlinked session file."
+    exit 1
+}
+
 if (!(Test-Path "$SESSION_FILE")) {
     Write-Error "Error: session.json not found. Run init.ps1 first."
     exit 1

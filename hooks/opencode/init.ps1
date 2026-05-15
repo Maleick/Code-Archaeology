@@ -27,6 +27,13 @@ Write-Host "Code Archaeology v${PLUGIN_VERSION} initializing..."
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR" | Out-Null
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR/patches" | Out-Null
 
+# Guard against symlink-based write redirection (Set-Content follows symlinks on Windows)
+$_sessionItem = Get-Item "$SESSION_FILE" -ErrorAction SilentlyContinue
+if ($null -ne $_sessionItem -and $_sessionItem.LinkType -eq "SymbolicLink") {
+    Write-Error "Error: session.json is a symlink. Refusing to write to symlinked session file."
+    exit 1
+}
+
 # Initialize session.json
 if (!(Test-Path "$SESSION_FILE")) {
     $NOW = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
