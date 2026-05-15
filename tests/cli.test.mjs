@@ -43,6 +43,8 @@ test("doctor reports core package files present", async () => {
   assert.match(stdout, /skills\/codex\/SKILL\.md/);
   assert.match(stdout, /hooks\/opencode\/init\.sh/);
   assert.match(stdout, /hooks\/opencode\/verify-phase\.sh/);
+  assert.match(stdout, /hooks\/opencode\/update-expedition\.sh/);
+  assert.match(stdout, /hooks\/opencode\/revert-phase\.sh/);
   assert.match(stdout, /hooks\/hermes\/setup\.sh/);
   assert.match(stdout, /hooks\/hermes\/runner\.sh/);
   assert.match(stdout, /skills\/hermes\/INTEGRATION\.md/);
@@ -196,6 +198,22 @@ test("install does not duplicate plugin entry", async () => {
       config.plugin.filter(
         (entry) => entry === "opencode-code-archaeology@git+https://github.com/Maleick/Code-Archaeology.git",
       ).length,
+      1,
+    );
+  } finally {
+    await rm(configDir, { recursive: true, force: true });
+  }
+});
+
+test("install does not duplicate skills path", async () => {
+  const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
+  try {
+    await runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } });
+    await runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } });
+
+    const config = JSON.parse(await readFile(join(configDir, "opencode.json"), "utf8"));
+    assert.equal(
+      config.skills.paths.filter((p) => p === join(root, "skills")).length,
       1,
     );
   } finally {
