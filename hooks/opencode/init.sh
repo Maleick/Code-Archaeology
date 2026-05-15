@@ -33,8 +33,9 @@ if [[ ! -f "$SESSION_FILE" ]]; then
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   SESSION_ID="archaeology-$(date -u +%s)-$$"
   BASELINE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
-  
-  jq -n \
+
+  tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
+  if jq -n \
     --arg sid "$SESSION_ID" \
     --arg now "$NOW" \
     --arg ver "$PLUGIN_VERSION" \
@@ -55,22 +56,29 @@ if [[ ! -f "$SESSION_FILE" ]]; then
       started_at: $now,
       updated_at: $now,
       expeditions: [
-        {phase: "survey", name: "Site Survey \u0026 Baseline", status: "pending", findings_count: 0},
+        {phase: "survey", name: "Site Survey & Baseline", status: "pending", findings_count: 0},
         {phase: "dead_code", name: "Dead Code Excavation", status: "pending", findings_count: 0},
         {phase: "legacy", name: "Legacy Stratum Removal", status: "pending", findings_count: 0},
         {phase: "dependencies", name: "Circular Dependency Cartography", status: "pending", findings_count: 0},
         {phase: "types_consolidate", name: "Type Catalog Consolidation", status: "pending", findings_count: 0},
-        {phase: "types_harden", name: "Type Restoration \u0026 Hardening", status: "pending", findings_count: 0},
+        {phase: "types_harden", name: "Type Restoration & Hardening", status: "pending", findings_count: 0},
         {phase: "dry", name: "DRY Stratification", status: "pending", findings_count: 0},
         {phase: "errors", name: "Error Handling Stratigraphy", status: "pending", findings_count: 0},
-        {phase: "polish", name: "Artifact Cleaning \u0026 Documentation", status: "pending", findings_count: 0},
-        {phase: "final_verify", name: "Site Preservation \u0026 Final Catalog", status: "pending", findings_count: 0}
+        {phase: "polish", name: "Artifact Cleaning & Documentation", status: "pending", findings_count: 0},
+        {phase: "final_verify", name: "Site Preservation & Final Catalog", status: "pending", findings_count: 0}
       ],
       total_findings: 0,
       auto_fixable_count: 0,
       baseline_commit: $baseline,
       completed: false
-    }' > "$SESSION_FILE"
+    }' > "$tmp"; then
+    chmod 600 "$tmp" 2>/dev/null || true
+    mv -f "$tmp" "$SESSION_FILE"
+  else
+    rm -f "$tmp"
+    echo "Error: failed to initialize session" >&2
+    exit 1
+  fi
   echo "Initialized $SESSION_FILE"
 else
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")

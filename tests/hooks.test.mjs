@@ -236,6 +236,53 @@ test("Hermes runner blocks restore mode until restore implementation exists", as
   }
 });
 
+test("OpenCode init hook creates a valid session.json in a clean repository", async () => {
+  const repo = await makeHookRepo();
+  try {
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /Initialized/);
+    assert.equal(session.version, 1);
+    assert.equal(session.completed, false);
+    assert.equal(session.expeditions.length, 10);
+    assert.ok(typeof session.session_id === "string" && session.session_id.startsWith("archaeology-"));
+    assert.equal(session.total_findings, 0);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode init hook refreshes an existing session.json without resetting it", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const existing = {
+      version: 1,
+      plugin_version: "0.0.0",
+      session_id: "archaeology-existing",
+      updated_at: "2025-01-01T00:00:00Z",
+      total_findings: 5,
+      completed: false,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(existing)}\n`);
+
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /Refreshed/);
+    assert.equal(session.session_id, "archaeology-existing");
+    assert.equal(session.total_findings, 5);
+    assert.notEqual(session.updated_at, "2025-01-01T00:00:00Z");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode init hook does not follow predictable session temp symlinks when refreshing", async () => {
   const repo = await makeHookRepo();
   const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
