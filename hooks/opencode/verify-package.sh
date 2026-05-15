@@ -12,6 +12,7 @@ const requiredFiles = [
   'dist/index.js',
   'commands/code-archaeology.md',
   'skills/code-archaeology/SKILL.md',
+  'skills/codex/SKILL.md',
   'hooks/opencode/init.sh',
   'hooks/opencode/verify-phase.sh',
   'hooks/opencode/revert-phase.sh',
