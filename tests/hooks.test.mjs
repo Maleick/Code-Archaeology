@@ -799,63 +799,53 @@ test("OpenCode update-expedition hook stamps completed_at only when status is co
   }
 });
 
-test("OpenCode update-expedition hook does not stamp completed_at for non-complete statuses", async () => {
-  const repo = await makeHookRepo();
-  try {
-    await mkdir(join(repo, ".archaeology"));
-    const session = {
-      version: 1,
-      updated_at: "2025-01-01T00:00:00Z",
-      expeditions: [
-        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
-      ],
-      total_findings: 0,
-    };
-    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+test("OpenCode update-expedition hook leaves completed_at unset for non-complete statuses", async () => {
+  const cases = [
+    {
+      status: "running",
+      initialCompletedAt: undefined,
+      message: "completed_at must not be set for non-complete status",
+    },
+    {
+      status: "in-progress",
+      initialCompletedAt: "2025-01-02T00:00:00Z",
+      message: "completed_at must be cleared when retrying a non-complete status",
+    },
+  ];
 
-    await execFileAsync(
-      "bash",
-      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "running", "0"],
-      { cwd: repo },
-    );
+  for (const { status, initialCompletedAt, message } of cases) {
+    const repo = await makeHookRepo();
+    try {
+      await mkdir(join(repo, ".archaeology"));
+      const expedition = {
+        phase: "survey",
+        name: "Site Survey",
+        status: "pending",
+        findings_count: 0,
+      };
+      if (initialCompletedAt !== undefined) {
+        expedition.completed_at = initialCompletedAt;
+      }
+      const session = {
+        version: 1,
+        updated_at: "2025-01-01T00:00:00Z",
+        expeditions: [expedition],
+        total_findings: 0,
+      };
+      await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
 
-    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.equal(updated.expeditions[0].status, "running");
-    assert.equal(
-      updated.expeditions[0].completed_at,
-      undefined,
-      "completed_at must not be set for non-complete status",
-    );
-  } finally {
-    await rm(repo, { recursive: true, force: true });
-  }
-});
+      await execFileAsync(
+        "bash",
+        [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", status, "0"],
+        { cwd: repo },
+      );
 
-test("OpenCode update-expedition hook sets completed_at only when status is complete", async () => {
-  const repo = await makeHookRepo();
-  try {
-    await mkdir(join(repo, ".archaeology"));
-    const session = {
-      version: 1,
-      updated_at: "2025-01-01T00:00:00Z",
-      expeditions: [
-        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
-      ],
-      total_findings: 0,
-    };
-    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
-
-    await execFileAsync(
-      "bash",
-      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "in-progress", "0"],
-      { cwd: repo },
-    );
-
-    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.equal(updated.expeditions[0].status, "in-progress");
-    assert.equal(updated.expeditions[0].completed_at, undefined);
-  } finally {
-    await rm(repo, { recursive: true, force: true });
+      const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+      assert.equal(updated.expeditions[0].status, status);
+      assert.equal(updated.expeditions[0].completed_at, undefined, message);
+    } finally {
+      await rm(repo, { recursive: true, force: true });
+    }
   }
 });
 
