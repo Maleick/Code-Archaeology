@@ -5,10 +5,6 @@
 set -euo pipefail
 
 PHASE="${1:-unknown}"
-ARCHAEOLOGY_DIR=".archaeology"
-SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Verification commands must not be read from repository-local state.
 # A malicious repository can pre-seed .archaeology/session.json; executing commands
