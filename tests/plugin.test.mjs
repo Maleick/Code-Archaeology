@@ -172,6 +172,55 @@ test("plugin config parses CRLF command templates", async () => {
   });
 });
 
+test("runtime version falls back to package.json when VERSION is empty", async () => {
+  await withPreloadModule(
+    "code-archaeology-runtime-preload-",
+    `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+
+const originalReadFileSync = fs.readFileSync;
+const versionPath = process.env.CODE_ARCH_VERSION_PATH;
+const packageJsonPath = process.env.CODE_ARCH_PACKAGE_JSON_PATH;
+const packageJsonContent = process.env.CODE_ARCH_PACKAGE_JSON_CONTENT;
+
+fs.readFileSync = function readFileSync(path, ...args) {
+  if (path === versionPath) {
+    return "";
+  }
+  if (path === packageJsonPath && packageJsonContent) {
+    return packageJsonContent;
+  }
+  return originalReadFileSync.call(this, path, ...args);
+};
+
+syncBuiltinESMExports();
+`,
+    async (preloadPath) => {
+      const { stdout } = await execFileAsync(
+        process.execPath,
+        [
+          "--import",
+          preloadPath,
+          "--input-type=module",
+          "--eval",
+          `import { version } from ${JSON.stringify(pathToFileURL(join(root, "dist", "runtime.js")).href)}; console.log(version);`,
+        ],
+        {
+          cwd: root,
+          env: {
+            ...process.env,
+            CODE_ARCH_VERSION_PATH: join(root, "VERSION"),
+            CODE_ARCH_PACKAGE_JSON_PATH: join(root, "package.json"),
+            CODE_ARCH_PACKAGE_JSON_CONTENT: `${JSON.stringify({ version: "8.8.8" })}\n`,
+          },
+        },
+      );
+
+      assert.equal(stdout.trim(), "8.8.8");
+    },
+  );
+});
+
 test("runtime version falls back to package.json when VERSION is missing", async () => {
   await withPreloadModule(
     "code-archaeology-runtime-preload-",
