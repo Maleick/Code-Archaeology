@@ -25,7 +25,7 @@
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution).
+Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **OpenCode** (interactive slash commands), **Codex** (native skill), and **Hermes Agent** (cron-based background execution).
 
 ```text
 +---------------------------------------------------------------+
@@ -35,7 +35,7 @@ Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely re
 | Review mode        | excavate: reports plus mock patches       |
 | Restore mode       | applies approved changes with test gates  |
 | Local state        | .archaeology/ runtime artifacts           |
-| Runtimes           | OpenCode plugin + Hermes Agent cron       |
+| Runtimes           | OpenCode plugin + Codex skill + Hermes cron |
 | Platforms          | macOS/Linux (bash) + Windows (PowerShell) |
 | Expedition order   | fixed stratigraphy from survey to catalog |
 +-------------------+-------------------------------------------+
@@ -52,7 +52,7 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 - Hardens weak types without guessing uncertain replacements.
 - Finds semantic duplication and error-handling slop while preserving I/O boundaries.
 - Produces `.archaeology/` reports that stay local to the working repository.
-- Supports both **OpenCode** interactive sessions and **Hermes Agent** cron-based phased execution.
+- Supports **OpenCode** interactive sessions, **Codex** skill sessions, and **Hermes Agent** cron-based phased execution.
 
 ## Installation
 
@@ -103,6 +103,17 @@ hermes cronjob create \
 
 See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and troubleshooting.
 
+### Codex
+
+Install the Codex skill into `$CODEX_HOME/skills`:
+
+```bash
+npm install -g opencode-code-archaeology@2.2.0
+opencode-code-archaeology install-codex
+```
+
+Restart Codex or start a new Codex session, then ask Codex to use `code-archaeology` in the target repository. The Codex skill follows the same report-first expedition order and writes local `.archaeology/` artifacts.
+
 ## Quick Start
 
 ### OpenCode
@@ -124,6 +135,16 @@ Run the command family from inside the repository you want to inspect:
 
 `--yolo` uses the full restore workflow in one shot (`yolo` mode), applying `HIGH` + `MEDIUM` confidence findings automatically.
 
+### Codex
+
+Ask Codex to use the `code-archaeology` skill from inside the repository you want to inspect:
+
+```text
+Use code-archaeology in survey mode.
+Use code-archaeology in excavate mode.
+Use code-archaeology in restore mode after reviewing the reports.
+```
+
 ### Hermes Agent
 
 Each cron run executes exactly **one** phase. The runner reads `.archaeology/session.json`, runs the current phase with verification, and advances to the next phase:
@@ -136,15 +157,15 @@ Ten phases complete in ~2.5 hours minimum (15-minute intervals).
 
 ## Runtime Surfaces
 
-| Feature | OpenCode | Hermes Agent |
-|---------|----------|--------------|
-| Entry | `/code-archaeology` slash command | `cronjob` |
-| Phases | All in one session | One per cron run |
-| Verification | Between expeditions | Between every phase |
-| Revert | Manual or automatic | Automatic on failure |
-| State | `.archaeology/session.json` | Same file |
-| Background | Plugin stays active | Cron resumes automatically |
-| Real-time | Yes | Delayed (15-min intervals) |
+| Feature | OpenCode | Codex | Hermes Agent |
+|---------|----------|-------|--------------|
+| Entry | `/code-archaeology` slash command | `code-archaeology` skill | `cronjob` |
+| Phases | All in one session | All in one session | One per cron run |
+| Verification | Between expeditions | Before/after editing phases | Between every phase |
+| Revert | Manual or automatic | Manual or automatic per Codex workflow | Automatic on failure |
+| State | `.archaeology/session.json` | Same file | Same file |
+| Background | Plugin stays active | Interactive session | Cron resumes automatically |
+| Real-time | Yes | Yes | Delayed (15-min intervals) |
 
 ## Expedition Flow
 
@@ -194,6 +215,15 @@ flowchart LR
 | `/code-archaeology-survey` | Generate site reports for review. | None outside `.archaeology/`. |
 | `/code-archaeology-excavate` | Generate reports and mock patches. | None outside `.archaeology/patches/`. |
 | `/code-archaeology-restore` | Apply approved high-confidence changes. | Yes, test-gated. |
+
+### Codex
+
+| Intent | Codex request | File changes |
+| --- | --- | --- |
+| Survey | `Use code-archaeology in survey mode` | None outside `.archaeology/` |
+| Excavate | `Use code-archaeology in excavate mode` | None outside `.archaeology/patches/` |
+| Restore | `Use code-archaeology in restore mode` | Yes, test-gated |
+| YOLO | `Use code-archaeology in yolo mode` | Yes, strict and test-gated |
 
 ### Hermes Agent
 
@@ -261,6 +291,7 @@ Code-Archaeology/
 |-- schema/             # JSON schemas for reports
 |-- skills/             # Code Archaeology skill definitions
 |   |-- code-archaeology/   # OpenCode skill
+|   |-- codex/              # Codex skill
 |   `-- hermes/             # Hermes Agent skill and integration docs
 |-- src/                # TypeScript source
 |-- INSTALL.md          # Multi-runtime install handoff

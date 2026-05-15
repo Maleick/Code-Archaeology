@@ -5,6 +5,7 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation. I
 ## Runtimes
 
 - **OpenCode** — Interactive slash-command runtime (`/code-archaeology`)
+- **Codex** — Interactive skill runtime (`code-archaeology`)
 - **Hermes Agent** — Cron-based background runtime (one phase per 15-minute run)
 
 ## OpenCode Handoff
@@ -20,6 +21,7 @@ Run `npm pack opencode-code-archaeology@2.2.0`, extract the resulting tarball, t
 - Node.js with npm, or Bun if your setup uses Bun package resolution.
 - Git installed and available in your shell.
 - A target repository with tests or type checks available before you run `restore` or `yolo` mode.
+- For Codex: Codex with skill loading from `$CODEX_HOME/skills`.
 - For Hermes: Hermes Agent CLI or an active Hermes session.
 - **Windows**: PowerShell 5.1 or later (hooks use `.ps1` scripts on Windows).
 
@@ -47,6 +49,23 @@ Restart OpenCode after editing the configuration. The command family should then
 
 `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
 `/code-archaeology --yolo` runs full restoration in one shot with `strict_mode` enabled.
+
+## Codex Skill Install
+
+Install the package globally, then copy the Codex skill into `$CODEX_HOME/skills/code-archaeology`:
+
+```bash
+npm install -g opencode-code-archaeology@2.2.0
+opencode-code-archaeology install-codex
+```
+
+Restart Codex or start a new Codex session so the skill list reloads. From a target repository, ask:
+
+```text
+Use code-archaeology in survey mode.
+Use code-archaeology in excavate mode.
+Use code-archaeology in restore mode after reviewing the reports.
+```
 
 ## Hermes Setup
 
@@ -89,6 +108,7 @@ If you prefer a global package install:
 ```bash
 npm install -g opencode-code-archaeology@2.2.0
 opencode-code-archaeology install
+opencode-code-archaeology install-codex
 opencode-code-archaeology doctor
 opencode-code-archaeology version
 ```
@@ -172,6 +192,13 @@ npm list -g opencode-code-archaeology --depth=0
 - Restart OpenCode so it reloads plugin commands.
 - Confirm the package installed successfully with `npm list -g opencode-code-archaeology --depth=0` if using the global path.
 - Run `/code-archaeology` from inside a Git repository, not from an empty directory.
+
+### Skill Not Found (Codex)
+
+- Run `opencode-code-archaeology install-codex`.
+- Confirm the skill exists at `$CODEX_HOME/skills/code-archaeology/SKILL.md` or `~/.codex/skills/code-archaeology/SKILL.md`.
+- Restart Codex or start a new session after installing the skill.
+- Ask for `code-archaeology` from inside a Git repository.
 
 ### Cron Not Running (Hermes)
 

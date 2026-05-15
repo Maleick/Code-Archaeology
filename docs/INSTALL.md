@@ -1,10 +1,11 @@
 # Install Code Archaeology
 
-This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recommended OpenCode plugin configuration, npm CLI install path, and Hermes Agent setup.
+This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recommended OpenCode plugin configuration, Codex skill install, npm CLI install path, and Hermes Agent setup.
 
 ## Prerequisites
 
 - OpenCode installed and available in your shell.
+- Codex installed if you want the native Codex skill runtime.
 - Node.js 18 or newer with npm.
 - Git installed and available in your shell.
 - A target repository with tests or type checks before running `restore` or `yolo` mode.
@@ -35,6 +36,17 @@ Restart OpenCode after editing the configuration. The command family should then
 `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
 `/code-archaeology --yolo` runs full restoration in one shot with `strict_mode` enabled.
 
+## Codex Skill Install
+
+Install the package globally and copy the skill into `$CODEX_HOME/skills`:
+
+```bash
+npm install -g opencode-code-archaeology@2.2.0
+opencode-code-archaeology install-codex
+```
+
+Restart Codex or start a new Codex session, then ask Codex to use `code-archaeology` from inside a Git repository.
+
 ## npm Global Install
 
 Use the npm package when you want the CLI installer and diagnostics:
@@ -42,6 +54,7 @@ Use the npm package when you want the CLI installer and diagnostics:
 ```bash
 npm install -g opencode-code-archaeology@2.2.0
 opencode-code-archaeology install
+opencode-code-archaeology install-codex
 opencode-code-archaeology doctor
 opencode-code-archaeology version
 ```

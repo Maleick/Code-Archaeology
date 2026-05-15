@@ -1,10 +1,11 @@
 # Code Archaeology Agent Guide
 
-Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports both **OpenCode** and **Hermes Agent** runtimes.
+Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports **OpenCode**, **Codex**, and **Hermes Agent** runtimes.
 
 ## Runtime Policy
 
 - **OpenCode** is the primary interactive runtime (slash commands).
+- **Codex** is the interactive skill runtime (`skills/codex/SKILL.md`).
 - **Hermes Agent** is the cron-based background runtime (one phase per 15-minute run).
 - The plugin operates entirely within the target repository.
 - All changes are isolated to a configurable branch (`refactor/archaeology` by default).
@@ -20,6 +21,9 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation, c
 ### Hermes hooks (`hooks/hermes/`)
 - `setup.sh` / `setup.ps1` — Detect Hermes capabilities and write `hermes-runtime.json`
 - `runner.sh` / `runner.ps1` — Execute one expedition phase per cron run with test gates
+
+### Codex skill (`skills/codex/`)
+- `SKILL.md` — Codex-native workflow instructions for survey, excavate, restore, and yolo modes.
 
 **Platform support:** `.sh` scripts run on macOS/Linux; `.ps1` scripts run on Windows (PowerShell).
 
@@ -51,6 +55,13 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation, c
    e. Advance to next phase in `session.json`
    f. **STOP** — next cron run continues
 4. After 10 phases, `FINAL_CATALOG.md` is generated
+
+## Codex Workflow
+
+1. Install the skill with `opencode-code-archaeology install-codex`
+2. Restart Codex or start a new Codex session so skills reload
+3. Ask Codex to use `code-archaeology` in the target repository
+4. Codex runs the same report-first expedition order and writes `.archaeology/` artifacts locally
 
 ## Local State
 

@@ -2,7 +2,7 @@
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports both **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution). It runs inside the target repository, writes local `.archaeology/` reports, and modifies source files in `restore` mode after review or in `yolo` mode when explicitly requested.
+Code Archaeology is a multi-runtime plugin for systematic codebase excavation, cataloging, and restoration. It supports **OpenCode** (interactive slash commands), **Codex** (native skill), and **Hermes Agent** (cron-based background execution). It runs inside the target repository, writes local `.archaeology/` reports, and modifies source files in `restore` mode after review or in `yolo` mode when explicitly requested.
 
 The public landing page is [`index.html`](index.html). These Markdown files remain the detailed documentation source.
 
@@ -14,6 +14,7 @@ The public landing page is [`index.html`](index.html). These Markdown files rema
 - [Security Audit](SECURITY_AUDIT.md)
 - [Repository README](../README.md)
 - [Root Install Handoff](../INSTALL.md)
+- [Codex Skill](../skills/codex/SKILL.md)
 - [Hermes Integration](../skills/hermes/INTEGRATION.md)
 - [Hermes Skill](../skills/hermes/README.md)
 
@@ -47,6 +48,22 @@ Review `.archaeology/site_survey.md` and expedition reports before using:
 ```text
 /code-archaeology-excavate
 /code-archaeology-restore
+```
+
+### Codex
+
+Install the skill and restart Codex:
+
+```bash
+npm install -g opencode-code-archaeology@2.2.0
+opencode-code-archaeology install-codex
+```
+
+Then ask Codex from inside the target repository:
+
+```text
+Use code-archaeology in survey mode.
+Use code-archaeology in restore mode after reviewing the reports.
 ```
 
 ### Hermes Agent
