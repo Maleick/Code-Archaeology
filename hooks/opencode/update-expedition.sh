@@ -25,14 +25,19 @@ NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 if command -v jq >/dev/null 2>&1; then
   local_tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
-  if [[ -n "$ERROR" ]]; then
-    jq_args=(--arg phase "$PHASE" --arg status "$STATUS" --argjson findings "$FINDINGS" --arg error "$ERROR" --arg now "$NOW")
-    jq_filter='(.expeditions[] | select(.phase == $phase)) |= (.status = $status | .findings_count = $findings | .error = $error | if $status == "running" then .started_at = $now else . end | if $status == "complete" then .completed_at = $now else . end) | .updated_at = $now | .total_findings = ([.expeditions[].findings_count] | add // 0)'
-  else
-    jq_args=(--arg phase "$PHASE" --arg status "$STATUS" --argjson findings "$FINDINGS" --arg now "$NOW")
-    jq_filter='(.expeditions[] | select(.phase == $phase)) |= (.status = $status | .findings_count = $findings | if $status == "running" then .started_at = $now else . end | if $status == "complete" then .completed_at = $now else . end) | .updated_at = $now | .total_findings = ([.expeditions[].findings_count] | add // 0)'
-  fi
-  if jq "${jq_args[@]}" "$jq_filter" "$SESSION_FILE" > "$local_tmp"; then
+  if jq --arg phase "$PHASE" \
+        --arg status "$STATUS" \
+        --argjson findings "$FINDINGS" \
+        --arg error "$ERROR" \
+        --arg now "$NOW" \
+        '(.expeditions[] | select(.phase == $phase)) |= (
+          .status = $status |
+          .findings_count = $findings |
+          if $status == "running" then .started_at = $now else . end |
+          if $status == "complete" then .completed_at = $now else . end |
+          if $error != "" then .error = $error else . end
+        ) | .updated_at = $now | .total_findings = ([.expeditions[].findings_count] | add // 0)' \
+        "$SESSION_FILE" > "$local_tmp"; then
     chmod 600 "$local_tmp" 2>/dev/null || true
     mv -f "$local_tmp" "$SESSION_FILE"
   else

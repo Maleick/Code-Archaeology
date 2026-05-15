@@ -873,3 +873,66 @@ test("OpenCode revert hook preserves reverted changes in a named stash", async (
     await rm(repo, { recursive: true, force: true });
   }
 });
+
+test("OpenCode update-expedition hook records error message when fourth argument is provided", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "running", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [
+        join(repo, "hooks", "opencode", "update-expedition.sh"),
+        "survey",
+        "failed",
+        "0",
+        "test command exited with code 2",
+      ],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "failed");
+    assert.equal(updated.expeditions[0].error, "test command exited with code 2");
+    assert.equal(updated.expeditions[0].completed_at, undefined);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode update-expedition hook does not set error field when fourth argument is omitted", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "complete", "4"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "complete");
+    assert.equal(updated.expeditions[0].error, undefined);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
