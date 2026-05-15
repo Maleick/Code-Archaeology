@@ -639,6 +639,45 @@ test("OpenCode verify hook forwards typecheck stderr output to operator", async 
   }
 });
 
+test("OpenCode verify hook passes when test and typecheck commands both succeed", async () => {
+  const repo = await makeHookRepo();
+  try {
+    const { stdout } = await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "verify-phase.sh"), "dead-code"],
+      {
+        cwd: repo,
+        env: {
+          ...process.env,
+          CODE_ARCHAEOLOGY_TEST_COMMAND: "true",
+          CODE_ARCHAEOLOGY_TYPECHECK_COMMAND: "true",
+        },
+      },
+    );
+
+    assert.match(stdout, /Verification passed/);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode revert hook exits cleanly when working tree has no changes to stash", async () => {
+  const repo = await makeHookRepo();
+  try {
+    const { stdout } = await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "revert-phase.sh"), "clean-phase"],
+      { cwd: repo },
+    );
+
+    const { stdout: stashList } = await execFileAsync("git", ["stash", "list"], { cwd: repo });
+    assert.match(stdout, /Reverting changes/);
+    assert.equal(stashList, "");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode update-expedition hook does not follow predictable session temp symlinks", async () => {
   const repo = await makeHookRepo();
   const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
