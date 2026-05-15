@@ -936,3 +936,31 @@ test("OpenCode update-expedition hook does not set error field when fourth argum
     await rm(repo, { recursive: true, force: true });
   }
 });
+
+test("OpenCode update-expedition hook clears stale error field when fourth argument is omitted", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "failed", findings_count: 0, error: "previous failure" },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "running", "0"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "running");
+    assert.equal(updated.expeditions[0].error, undefined, "stale error must be cleared on retry");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
