@@ -11,6 +11,11 @@ ERROR="${4:-}"
 ARCHAEOLOGY_DIR=".archaeology"
 SESSION_FILE="$ARCHAEOLOGY_DIR/session.json"
 
+if [[ -L "$SESSION_FILE" ]]; then
+  echo "Error: session.json is a symlink. Refusing to update symlinked session file." >&2
+  exit 1
+fi
+
 if [[ ! -f "$SESSION_FILE" ]]; then
   echo "Error: session.json not found. Run init.sh first." >&2
   exit 1
