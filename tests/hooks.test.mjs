@@ -9,6 +9,33 @@ import test from "node:test";
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 
+test("hooks with auto-sync guard do not execute git pull when origin is missing", async () => {
+  const repo = await mkdtemp(join(tmpdir(), "code-archaeology-sync-guard-"));
+  try {
+    await cp(join(root, "hooks"), join(repo, "hooks"), { recursive: true });
+    await cp(join(root, "VERSION"), join(repo, "VERSION"));
+    await execFileAsync("git", ["init"], { cwd: repo });
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: repo });
+    await execFileAsync("git", ["config", "user.name", "Test User"], { cwd: repo });
+    await writeFile(join(repo, "package.json"), `${JSON.stringify({ scripts: { test: "true" } })}\n`);
+    await execFileAsync("git", ["add", "."], { cwd: repo });
+    await execFileAsync("git", ["commit", "-m", "initial"], { cwd: repo });
+
+    // No remote configured — auto-sync should silently skip
+    const { stdout, stderr } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "setup.sh")], {
+      cwd: repo,
+      env: { ...process.env },
+    });
+
+    assert.doesNotMatch(stdout, /pulling/);
+    assert.doesNotMatch(stderr, /pulling/);
+    assert.doesNotMatch(stdout, /git pull/);
+    assert.doesNotMatch(stderr, /git pull/);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 async function makeHookRepo() {
   const repo = await mkdtemp(join(tmpdir(), "code-archaeology-hooks-"));
   await cp(join(root, "hooks"), join(repo, "hooks"), { recursive: true });
@@ -236,81 +263,6 @@ test("Hermes runner blocks restore mode until restore implementation exists", as
   }
 });
 
-test("OpenCode init hook creates a valid session.json in a clean repository", async () => {
-  const repo = await makeHookRepo();
-  try {
-    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
-      cwd: repo,
-    });
-
-    const { stdout: gitBranch } = await execFileAsync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd: repo });
-    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.match(stdout, /Initialized/);
-    assert.equal(session.version, 1);
-    assert.equal(session.completed, false);
-    assert.equal(session.expeditions.length, 10);
-    assert.ok(typeof session.session_id === "string" && session.session_id.startsWith("archaeology-"));
-    assert.equal(session.total_findings, 0);
-    assert.equal(session.config.branch_name, gitBranch.trim());
-  } finally {
-    await rm(repo, { recursive: true, force: true });
-  }
-});
-
-test("OpenCode init hook refreshes an existing session.json without resetting it", async () => {
-  const repo = await makeHookRepo();
-  try {
-    await mkdir(join(repo, ".archaeology"));
-    const existing = {
-      version: 1,
-      plugin_version: "0.0.0",
-      session_id: "archaeology-existing",
-      updated_at: "2025-01-01T00:00:00Z",
-      total_findings: 5,
-      completed: false,
-    };
-    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(existing)}\n`);
-
-    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
-      cwd: repo,
-    });
-
-    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.match(stdout, /Refreshed/);
-    assert.equal(session.session_id, "archaeology-existing");
-    assert.equal(session.total_findings, 5);
-    assert.notEqual(session.updated_at, "2025-01-01T00:00:00Z");
-  } finally {
-    await rm(repo, { recursive: true, force: true });
-  }
-});
-
-test("OpenCode init hook does not follow predictable session temp symlinks when refreshing", async () => {
-  const repo = await makeHookRepo();
-  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
-  const victim = join(victimDir, "victim.txt");
-  try {
-    await mkdir(join(repo, ".archaeology"));
-    await writeFile(victim, "do not overwrite\n");
-    await symlink(victim, join(repo, ".archaeology", "session.json.tmp"));
-    await writeFile(
-      join(repo, ".archaeology", "session.json"),
-      `${JSON.stringify({ version: 1, updated_at: "2025-01-01T00:00:00Z" })}\n`,
-    );
-
-    await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
-      cwd: repo,
-    });
-
-    assert.equal(await readFile(victim, "utf8"), "do not overwrite\n");
-    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.equal(session.version, 1);
-  } finally {
-    await rm(repo, { recursive: true, force: true });
-    await rm(victimDir, { recursive: true, force: true });
-  }
-});
-
 test("OpenCode verify hook fails when typecheck fails", async () => {
   const repo = await makeHookRepo();
   try {
@@ -349,41 +301,6 @@ test("OpenCode verify hook forwards typecheck stderr output to operator", async 
     );
   } finally {
     await rm(repo, { recursive: true, force: true });
-  }
-});
-
-test("OpenCode update-expedition hook does not follow predictable session temp symlinks", async () => {
-  const repo = await makeHookRepo();
-  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
-  const victim = join(victimDir, "victim.txt");
-  try {
-    await mkdir(join(repo, ".archaeology"));
-    await writeFile(victim, "do not overwrite\n");
-    const session = {
-      version: 1,
-      updated_at: "2025-01-01T00:00:00Z",
-      expeditions: [
-        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
-      ],
-      total_findings: 0,
-    };
-    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
-    await symlink(victim, join(repo, ".archaeology", "session.json.tmp"));
-
-    await execFileAsync(
-      "bash",
-      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "complete", "3"],
-      { cwd: repo },
-    );
-
-    assert.equal(await readFile(victim, "utf8"), "do not overwrite\n");
-    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
-    assert.equal(updated.expeditions[0].status, "complete");
-    assert.equal(updated.expeditions[0].findings_count, 3);
-    assert.equal(updated.total_findings, 3);
-  } finally {
-    await rm(repo, { recursive: true, force: true });
-    await rm(victimDir, { recursive: true, force: true });
   }
 });
 

@@ -23,6 +23,7 @@ coverage/
 
 # Local state
 .archaeology/
+expeditions/
 .autoresearch/
 .superpowers/
 HERMES_PROMPT.md

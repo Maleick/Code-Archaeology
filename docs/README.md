@@ -55,7 +55,7 @@ Review `.archaeology/site_survey.md` and expedition reports before using:
 Install the skill and restart Codex:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.2.0
 opencode-code-archaeology install-codex
 ```
 
