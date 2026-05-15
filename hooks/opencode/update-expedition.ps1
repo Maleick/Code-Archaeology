@@ -35,6 +35,10 @@ foreach ($expedition in $session.expeditions) {
         }
         if ($STATUS -eq "complete") {
             $expedition | Add-Member -MemberType NoteProperty -Name "completed_at" -Value $NOW -Force
+        } else {
+            if ($expedition.PSObject.Properties["completed_at"]) {
+                $expedition.PSObject.Properties.Remove("completed_at")
+            }
         }
         if ($ERROR_MSG) {
             $expedition | Add-Member -MemberType NoteProperty -Name "error" -Value $ERROR_MSG -Force
