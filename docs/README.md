@@ -25,13 +25,13 @@ The public landing page is [`index.html`](index.html). These Markdown files rema
 Install the package globally, register the plugin, then verify the CLI:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6 && opencode-code-archaeology install && opencode-code-archaeology doctor
+npm install -g opencode-code-archaeology@2.8.0 && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 Or tell OpenCode:
 
 ```text
-Fetch and follow the instructions in the installed package's INSTALL.md at $(npm root -g)/opencode-code-archaeology/INSTALL.md for opencode-code-archaeology@2.2.6
+Fetch and follow the instructions in the installed package's INSTALL.md at $(npm root -g)/opencode-code-archaeology/INSTALL.md for opencode-code-archaeology@2.8.0
 ```
 
 Restart OpenCode in the repository you want to inspect and start with the non-destructive default command:
@@ -55,7 +55,7 @@ Review `.archaeology/site_survey.md` and expedition reports before using:
 Install the skill and restart Codex:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 opencode-code-archaeology install-codex
 ```
 

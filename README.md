@@ -61,7 +61,7 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 Paste this handoff into your agent:
 
 ```text
-Run `npm pack opencode-code-archaeology@2.2.6`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
+Run `npm pack opencode-code-archaeology@2.8.0`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
 ```
 
 Recommended plugin install in `opencode.json`:
@@ -69,7 +69,7 @@ Recommended plugin install in `opencode.json`:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@2.2.6"
+    "opencode-code-archaeology@2.8.0"
   ]
 }
 ```
@@ -77,20 +77,20 @@ Recommended plugin install in `opencode.json`:
 Global npm install path:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6 && opencode-code-archaeology install && opencode-code-archaeology doctor
+npm install -g opencode-code-archaeology@2.8.0 && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 One-time package runner path, if your OpenCode setup supports package execution through Bun:
 
 ```bash
-bunx opencode-code-archaeology@2.2.6 install
-bunx opencode-code-archaeology@2.2.6 doctor
+bunx opencode-code-archaeology@2.8.0 install
+bunx opencode-code-archaeology@2.8.0 doctor
 ```
 
 ### Hermes Agent
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
 
@@ -108,7 +108,7 @@ See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and tr
 Install the Codex skill into `$CODEX_HOME/skills`:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 opencode-code-archaeology install-codex
 ```
 
