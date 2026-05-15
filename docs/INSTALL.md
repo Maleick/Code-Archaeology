@@ -41,7 +41,7 @@ Restart OpenCode after editing the configuration. The command family should then
 Install the package globally and copy the skill into `$CODEX_HOME/skills`:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.2.0
 opencode-code-archaeology install-codex
 ```
 
