@@ -27,7 +27,7 @@ try {
 
 Write-Host "[$PHASE] Running typecheck: $TYPECHECK_CMD"
 try {
-    Invoke-CheckedCommand -CommandLine $TYPECHECK_CMD 2>$null | Out-Default
+    Invoke-CheckedCommand -CommandLine $TYPECHECK_CMD | Out-Default
 } catch {
     Write-Error "[$PHASE] Typecheck FAILED"
     exit 1

@@ -255,6 +255,28 @@ test("OpenCode verify hook fails when typecheck fails", async () => {
   }
 });
 
+test("OpenCode verify hook forwards typecheck stderr output to operator", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "opencode", "verify-phase.sh"), "restore-phase"], {
+        cwd: repo,
+        env: {
+          ...process.env,
+          CODE_ARCHAEOLOGY_TYPECHECK_COMMAND: "bash -c 'echo \"error TS2339: Property does not exist\" >&2; exit 1'",
+        },
+      }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /error TS2339: Property does not exist/);
+        return true;
+      },
+    );
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
   const repo = await makeHookRepo();
   try {

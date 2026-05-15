@@ -24,7 +24,7 @@ if ! bash -c "$TEST_CMD"; then
 fi
 
 echo "[$PHASE] Running typecheck: $TYPECHECK_CMD"
-if ! bash -c "$TYPECHECK_CMD" 2>/dev/null; then
+if ! bash -c "$TYPECHECK_CMD"; then
   echo "[$PHASE] ❌ Typecheck FAILED" >&2
   exit 1
 fi
