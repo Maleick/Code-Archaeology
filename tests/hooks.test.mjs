@@ -787,6 +787,66 @@ test("OpenCode update-expedition hook sets completed_at when status is complete"
   }
 });
 
+test("OpenCode update-expedition hook stamps started_at when status is running", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "running", "0"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "running");
+    assert.ok(
+      typeof updated.expeditions[0].started_at === "string" && updated.expeditions[0].started_at.length > 0,
+      "started_at should be set when status is running",
+    );
+    assert.equal(updated.expeditions[0].completed_at, undefined, "completed_at must not be set for running status");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode update-expedition hook does not stamp started_at for non-running statuses", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "complete", "3"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "complete");
+    assert.equal(updated.expeditions[0].started_at, undefined, "started_at must not be set for non-running status");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
   const repo = await makeHookRepo();
   try {

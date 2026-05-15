@@ -30,6 +30,9 @@ foreach ($expedition in $session.expeditions) {
     if ($expedition.phase -eq $PHASE) {
         $expedition.status = $STATUS
         $expedition.findings_count = $FINDINGS
+        if ($STATUS -eq "running") {
+            $expedition | Add-Member -MemberType NoteProperty -Name "started_at" -Value $NOW -Force
+        }
         if ($STATUS -eq "complete" -or $STATUS -eq "completed" -or $STATUS -eq "done") {
             $expedition | Add-Member -MemberType NoteProperty -Name "completed_at" -Value $NOW -Force
         }
