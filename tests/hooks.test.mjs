@@ -311,6 +311,47 @@ test("OpenCode init hook does not follow predictable session temp symlinks when 
   }
 });
 
+test("OpenCode verify hook fails when test command fails", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "opencode", "verify-phase.sh"), "dead-code"], {
+        cwd: repo,
+        env: { ...process.env, CODE_ARCHAEOLOGY_TEST_COMMAND: "false" },
+      }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /Tests FAILED/);
+        return true;
+      },
+    );
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode verify hook forwards test command stderr output to operator", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "opencode", "verify-phase.sh"), "dead-code"], {
+        cwd: repo,
+        env: {
+          ...process.env,
+          CODE_ARCHAEOLOGY_TEST_COMMAND: "bash -c 'echo \"FAIL: 3 tests failed\" >&2; exit 1'",
+        },
+      }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /FAIL: 3 tests failed/);
+        return true;
+      },
+    );
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode verify hook fails when typecheck fails", async () => {
   const repo = await makeHookRepo();
   try {
