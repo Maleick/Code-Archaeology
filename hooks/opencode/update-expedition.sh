@@ -31,7 +31,7 @@ if command -v jq >/dev/null 2>&1; then
           --argjson findings "$FINDINGS" \
           --arg error "$ERROR" \
           --arg now "$NOW" \
-          '(.expeditions[] | select(.phase == $phase)) |= (.status = $status | .findings_count = $findings | .error = $error | .completed_at = $now) | .updated_at = $now' \
+          '(.expeditions[] | select(.phase == $phase)) |= (.status = $status | .findings_count = $findings | .error = $error | if $status == "complete" then .completed_at = $now else . end) | .updated_at = $now' \
           "$SESSION_FILE" > "$local_tmp"; then
       chmod 600 "$local_tmp" 2>/dev/null || true
       mv -f "$local_tmp" "$SESSION_FILE"
@@ -45,7 +45,7 @@ if command -v jq >/dev/null 2>&1; then
           --arg status "$STATUS" \
           --argjson findings "$FINDINGS" \
           --arg now "$NOW" \
-          '(.expeditions[] | select(.phase == $phase)) |= (.status = $status | .findings_count = $findings | .completed_at = $now) | .updated_at = $now' \
+          '(.expeditions[] | select(.phase == $phase)) |= (.status = $status | .findings_count = $findings | if $status == "complete" then .completed_at = $now else . end) | .updated_at = $now' \
           "$SESSION_FILE" > "$local_tmp"; then
       chmod 600 "$local_tmp" 2>/dev/null || true
       mv -f "$local_tmp" "$SESSION_FILE"

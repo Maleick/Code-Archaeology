@@ -626,6 +626,69 @@ test("OpenCode update-expedition hook refuses symlinked session.json without ove
   }
 });
 
+test("OpenCode update-expedition hook stamps completed_at only when status is complete", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "complete", "5"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "complete");
+    assert.ok(
+      typeof updated.expeditions[0].completed_at === "string" && updated.expeditions[0].completed_at.length > 0,
+      "completed_at should be set for complete status",
+    );
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode update-expedition hook does not stamp completed_at for non-complete statuses", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "running", "0"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "running");
+    assert.equal(
+      updated.expeditions[0].completed_at,
+      undefined,
+      "completed_at must not be set for non-complete status",
+    );
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
   const repo = await makeHookRepo();
   try {
