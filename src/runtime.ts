@@ -76,7 +76,7 @@ export async function codeArchaeologyPlugin() {
       config.skills = config.skills ?? {};
       config.skills.paths = config.skills.paths ?? [];
       if (!config.skills.paths.includes(skillsPath)) {
-        config.skills.paths.push(skillsPath);
+        config.skills.paths = [...config.skills.paths, skillsPath];
       }
     },
   };

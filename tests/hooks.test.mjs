@@ -378,6 +378,41 @@ test("Hermes runner marks session complete after the final phase", async () => {
   }
 });
 
+test("Hermes runner exits non-zero when session is blocked", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "blocked",
+        current_phase: "dead-code",
+        completed_phases: ["site-survey"],
+        mode: "survey",
+        branch_name: "refactor/archaeology",
+        flags: { blocked_reason: "unknown phase: bad-phase" },
+      })}\n`,
+    );
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], { cwd: repo }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /Hermes session is blocked/);
+        assert.match(error.stderr, /unknown phase: bad-phase/);
+        return true;
+      },
+    );
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(session.status, "blocked");
+    assert.equal(session.current_phase, "dead-code");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("Hermes runner exits cleanly when session is already complete", async () => {
   const repo = await makeHookRepo();
   try {
@@ -869,6 +904,36 @@ test("OpenCode revert hook preserves reverted changes in a named stash", async (
     assert.match(stashList, /code-archaeology-revert-test-phase/);
     assert.match(stashFiles, /package\.json/);
     assert.match(stashFiles, /new-artifact\.txt/);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode update-expedition hook does not stamp timestamps for skipped status", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "skipped", "0"],
+      { cwd: repo },
+    );
+
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "skipped");
+    assert.equal(updated.expeditions[0].started_at, undefined, "started_at must not be set for skipped status");
+    assert.equal(updated.expeditions[0].completed_at, undefined, "completed_at must not be set for skipped status");
+    assert.equal(updated.expeditions[0].error, undefined, "error must not be set for skipped status");
   } finally {
     await rm(repo, { recursive: true, force: true });
   }

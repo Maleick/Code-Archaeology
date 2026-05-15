@@ -103,13 +103,19 @@ validate_branch_name() {
 require_jq
 require_safe_session_path
 
-# Exit cleanly if the session is already complete so a stale cron invocation
-# does not silently re-initialize and destroy the finished session state.
+# Exit early for terminal session states so stale cron invocations do not
+# silently re-initialize or re-trigger blocking logic on every run.
 if [[ -f "$SESSION_FILE" ]]; then
   _status=$(jq -r '.status // empty' "$SESSION_FILE" 2>/dev/null || true)
   if [[ "$_status" == "complete" ]]; then
     echo "All Code Archaeology phases are complete. Nothing to do."
     exit 0
+  fi
+  if [[ "$_status" == "blocked" ]]; then
+    _reason=$(jq -r '.flags.blocked_reason // "unknown"' "$SESSION_FILE" 2>/dev/null || true)
+    echo "ERROR: Hermes session is blocked: $_reason" >&2
+    echo "Fix the session state in $SESSION_FILE and remove the 'blocked' status to resume." >&2
+    exit 1
   fi
 fi
 
