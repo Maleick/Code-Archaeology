@@ -6,7 +6,7 @@ This guide mirrors the root [`INSTALL.md`](../INSTALL.md) and covers the recomme
 
 - OpenCode installed and available in your shell.
 - Codex installed if you want the native Codex skill runtime.
-- Node.js 18 or newer with npm.
+- Node.js 22 or newer with npm.
 - Git installed and available in your shell.
 - A target repository with tests or type checks before running `restore` or `yolo` mode.
 - For Hermes: Hermes Agent CLI or an active Hermes session.
@@ -18,7 +18,7 @@ Add Code Archaeology to the top-level `plugin` array in `opencode.json`:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@2.2.6"
+    "opencode-code-archaeology@2.8.0"
   ]
 }
 ```
@@ -41,7 +41,7 @@ Restart OpenCode after editing the configuration. The command family should then
 Install the package globally and copy the skill into `$CODEX_HOME/skills`:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.0
+npm install -g opencode-code-archaeology@2.8.0
 opencode-code-archaeology install-codex
 ```
 
@@ -52,7 +52,7 @@ Restart Codex or start a new Codex session, then ask Codex to use `code-archaeol
 Use the npm package when you want the CLI installer and diagnostics:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 opencode-code-archaeology install
 opencode-code-archaeology install-codex
 opencode-code-archaeology doctor
@@ -70,7 +70,7 @@ Then restart OpenCode and run:
 Install the CLI globally so Hermes can invoke Code Archaeology commands. To initialize Hermes runtime metadata, run the hook from a local clone or from the unpacked package contents:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
 ```
@@ -123,7 +123,7 @@ For plugin-array installs, update by changing the package version to a reviewed 
 For npm global installs:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 npm list -g opencode-code-archaeology --depth=0
 opencode-code-archaeology doctor
 ```

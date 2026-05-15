@@ -20,12 +20,12 @@
   <a href="https://github.com/Maleick/Code-Archaeology/wiki">Wiki</a> |
   <a href="#commands">Commands</a> |
   <a href="#safety-model">Safety</a> |
-  <a href="#release-docs">Release</a>
+  <a href="docs/RELEASE.md">Release</a>
 </p>
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **Claude Code** (interactive slash commands), **OpenCode** (interactive slash commands), and **Hermes Agent** (cron-based background execution).
+Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **OpenCode** (interactive slash commands), **Codex** (native skill), and **Hermes Agent** (cron-based background execution).
 
 ```text
 +---------------------------------------------------------------+
@@ -35,7 +35,7 @@ Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely re
 | Review mode        | excavate: reports plus mock patches       |
 | Restore mode       | applies approved changes with test gates  |
 | Local state        | .archaeology/ runtime artifacts           |
-| Runtimes           | Claude Code + OpenCode + Hermes Agent     |
+| Runtimes           | OpenCode plugin + Codex skill + Hermes cron |
 | Platforms          | macOS/Linux (bash) + Windows (PowerShell) |
 | Expedition order   | fixed stratigraphy from survey to catalog |
 +-------------------+-------------------------------------------+
@@ -52,7 +52,7 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 - Hardens weak types without guessing uncertain replacements.
 - Finds semantic duplication and error-handling slop while preserving I/O boundaries.
 - Produces `.archaeology/` reports that stay local to the working repository.
-- Supports **Claude Code** interactive sessions, **OpenCode** interactive sessions, and **Hermes Agent** cron-based phased execution.
+- Supports **OpenCode** interactive sessions, **Codex** skill sessions, and **Hermes Agent** cron-based phased execution.
 
 ## Installation
 
@@ -77,7 +77,7 @@ See [`skills/claude-code/INTEGRATION.md`](skills/claude-code/INTEGRATION.md) for
 Paste this handoff into your agent:
 
 ```text
-Run `npm pack opencode-code-archaeology@2.2.6`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
+Run `npm pack opencode-code-archaeology@2.8.0`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
 ```
 
 Recommended plugin install in `opencode.json`:
@@ -85,7 +85,7 @@ Recommended plugin install in `opencode.json`:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@2.2.6"
+    "opencode-code-archaeology@2.8.0"
   ]
 }
 ```
@@ -93,20 +93,20 @@ Recommended plugin install in `opencode.json`:
 Global npm install path:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6 && opencode-code-archaeology install && opencode-code-archaeology doctor
+npm install -g opencode-code-archaeology@2.8.0 && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 One-time package runner path, if your OpenCode setup supports package execution through Bun:
 
 ```bash
-bunx opencode-code-archaeology@2.2.6 install
-bunx opencode-code-archaeology@2.2.6 doctor
+bunx opencode-code-archaeology@2.8.0 install
+bunx opencode-code-archaeology@2.8.0 doctor
 ```
 
 ### Hermes Agent
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.6
+npm install -g opencode-code-archaeology@2.8.0
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
 
@@ -124,7 +124,7 @@ See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and tr
 Install the Codex skill into `$CODEX_HOME/skills`:
 
 ```bash
-npm install -g opencode-code-archaeology@2.2.0
+npm install -g opencode-code-archaeology@2.8.0
 opencode-code-archaeology install-codex
 ```
 
@@ -182,14 +182,14 @@ Ten phases complete in ~2.5 hours minimum (15-minute intervals).
 
 ## Runtime Surfaces
 
-| Feature | Claude Code | OpenCode | Hermes Agent |
-|---------|-------------|----------|--------------|
-| Entry | `/code-archaeology` slash command | `/code-archaeology` slash command | `cronjob` |
+| Feature | OpenCode | Codex | Hermes Agent |
+|---------|----------|-------|--------------|
+| Entry | `/code-archaeology` slash command | `code-archaeology` skill | `cronjob` |
 | Phases | All in one session | All in one session | One per cron run |
-| Phase tracking | `TodoWrite` todos | Internal session state | `.archaeology/session.json` |
-| Verification | Between expeditions | Between expeditions | Between every phase |
-| Revert | Manual or automatic | Manual or automatic | Automatic on failure |
-| Background | Not applicable | Plugin stays active | Cron resumes automatically |
+| Verification | Between expeditions | Before/after editing phases | Between every phase |
+| Revert | Manual or automatic | Manual or automatic per Codex workflow | Automatic on failure |
+| State | `.archaeology/session.json` | Same file | Same file |
+| Background | Plugin stays active | Interactive session | Cron resumes automatically |
 | Real-time | Yes | Yes | Delayed (15-min intervals) |
 
 ## Expedition Flow
@@ -316,7 +316,7 @@ Code-Archaeology/
 |-- schema/             # JSON schemas for reports
 |-- skills/             # Code Archaeology skill definitions
 |   |-- code-archaeology/   # OpenCode skill
-|   |-- claude-code/        # Claude Code skill and integration docs
+|   |-- codex/              # Codex skill
 |   `-- hermes/             # Hermes Agent skill and integration docs
 |-- src/                # TypeScript source
 |-- INSTALL.md          # Multi-runtime install handoff
@@ -345,6 +345,7 @@ For plugin development:
 ```bash
 npm install
 npm run build
+npm test
 npm run typecheck
 npm pack --json --dry-run
 bash -n hooks/opencode/*.sh
@@ -360,13 +361,6 @@ bash hooks/opencode/verify-phase.sh final_verify
 # Hermes
 bash hooks/hermes/runner.sh
 ```
-
-## Release Docs
-
-- [`docs/README.md`](docs/README.md) is the documentation landing page.
-- [`docs/RELEASE.md`](docs/RELEASE.md) covers release preparation and publishing.
-- [`INSTALL.md`](INSTALL.md) is the raw handoff for multi-runtime installation.
-- [GitHub Releases](https://github.com/Maleick/Code-Archaeology/releases) lists published versions.
 
 ## License
 

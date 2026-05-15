@@ -11,6 +11,12 @@ $ERROR_MSG = if ($args[3]) { $args[3] } else { "" }
 $ARCHAEOLOGY_DIR = ".archaeology"
 $SESSION_FILE = "$ARCHAEOLOGY_DIR/session.json"
 
+$_sessionItem = Get-Item "$SESSION_FILE" -ErrorAction SilentlyContinue
+if ($null -ne $_sessionItem -and $_sessionItem.LinkType -eq "SymbolicLink") {
+    Write-Error "Error: session.json is a symlink. Refusing to update symlinked session file."
+    exit 1
+}
+
 if (!(Test-Path "$SESSION_FILE")) {
     Write-Error "Error: session.json not found. Run init.ps1 first."
     exit 1
@@ -24,8 +30,15 @@ foreach ($expedition in $session.expeditions) {
     if ($expedition.phase -eq $PHASE) {
         $expedition.status = $STATUS
         $expedition.findings_count = $FINDINGS
-        if ($STATUS -eq "complete" -or $STATUS -eq "completed" -or $STATUS -eq "done") {
+        if ($STATUS -eq "running") {
+            $expedition | Add-Member -MemberType NoteProperty -Name "started_at" -Value $NOW -Force
+        }
+        if ($STATUS -eq "complete") {
             $expedition | Add-Member -MemberType NoteProperty -Name "completed_at" -Value $NOW -Force
+        } else {
+            if ($expedition.PSObject.Properties["completed_at"]) {
+                $expedition.PSObject.Properties.Remove("completed_at")
+            }
         }
         if ($ERROR_MSG) {
             $expedition | Add-Member -MemberType NoteProperty -Name "error" -Value $ERROR_MSG -Force

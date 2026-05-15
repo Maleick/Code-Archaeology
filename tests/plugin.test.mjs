@@ -134,6 +134,20 @@ test("plugin config preserves existing commands and skill paths", async () => {
   assert.deepEqual(config.skills.paths, [existingPath]);
 });
 
+test("plugin config does not mutate the original skills.paths array", async () => {
+  const pluginModule = await import("../dist/index.js");
+  const hooks = await pluginModule.default();
+  const originalPaths = ["/some/pre-existing/path"];
+  const config = { skills: { paths: originalPaths } };
+
+  await hooks.config(config);
+
+  assert.equal(originalPaths.length, 1, "original array must not be mutated");
+  assert.equal(config.skills.paths.length, 2);
+  assert.equal(config.skills.paths[0], "/some/pre-existing/path");
+  assert.equal(config.skills.paths[1], join(root, "skills"));
+});
+
 test("plugin config registers Code Archaeology command templates", async () => {
   const pluginModule = await import("../dist/index.js");
   const hooks = await pluginModule.default();

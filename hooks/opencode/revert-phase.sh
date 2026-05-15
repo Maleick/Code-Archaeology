@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Move current working tree changes into a recoverable stash.
 # Usage: revert-phase.sh [phase-name]
 

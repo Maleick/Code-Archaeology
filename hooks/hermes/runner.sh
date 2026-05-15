@@ -104,6 +104,22 @@ validate_branch_name() {
 require_jq
 require_safe_session_path
 
+# Exit early for terminal session states so stale cron invocations do not
+# silently re-initialize or re-trigger blocking logic on every run.
+if [[ -f "$SESSION_FILE" ]]; then
+  _status=$(jq -r '.status // empty' "$SESSION_FILE" 2>/dev/null || true)
+  if [[ "$_status" == "complete" ]]; then
+    echo "All Code Archaeology phases are complete. Nothing to do."
+    exit 0
+  fi
+  if [[ "$_status" == "blocked" ]]; then
+    _reason=$(jq -r '.flags.blocked_reason // "unknown"' "$SESSION_FILE" 2>/dev/null || true)
+    echo "ERROR: Hermes session is blocked: $_reason" >&2
+    echo "Fix the session state in $SESSION_FILE and remove the 'blocked' status to resume." >&2
+    exit 1
+  fi
+fi
+
 # Phase definitions (fixed order)
 PHASES=(
   "site-survey"
@@ -252,20 +268,13 @@ else
 fi
 
 # Update session: mark phase complete, advance to next
-completed=$(jq -r '.completed_phases | join(",")' "$SESSION_FILE")
-if [[ -n "$completed" ]]; then
-  completed="$completed,$current_phase"
-else
-  completed="$current_phase"
-fi
-
 next_phase=""
 if [[ $phase_idx -lt $((${#PHASES[@]} - 1)) ]]; then
   next_phase="${PHASES[$((phase_idx + 1))]}"
 fi
 
-write_session_jq --arg completed "$completed" --arg next "$next_phase" \
-  '.completed_phases = ($completed | split(",")) | .current_phase = $next'
+write_session_jq --arg phase "$current_phase" --arg next "$next_phase" \
+  '.completed_phases = ((.completed_phases // []) + [$phase]) | .current_phase = $next'
 
 if [[ -n "$next_phase" ]]; then
   echo ""

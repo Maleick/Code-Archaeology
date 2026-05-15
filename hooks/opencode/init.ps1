@@ -27,6 +27,13 @@ Write-Host "Code Archaeology v${PLUGIN_VERSION} initializing..."
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR" | Out-Null
 New-Item -ItemType Directory -Force -Path "$ARCHAEOLOGY_DIR/patches" | Out-Null
 
+# Guard against symlink-based write redirection (Set-Content follows symlinks on Windows)
+$_sessionItem = Get-Item "$SESSION_FILE" -ErrorAction SilentlyContinue
+if ($null -ne $_sessionItem -and $_sessionItem.LinkType -eq "SymbolicLink") {
+    Write-Error "Error: session.json is a symlink. Refusing to write to symlinked session file."
+    exit 1
+}
+
 # Initialize session.json
 if (!(Test-Path "$SESSION_FILE")) {
     $NOW = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -34,6 +41,10 @@ if (!(Test-Path "$SESSION_FILE")) {
     $BASELINE_COMMIT = "unknown"
     try {
         $BASELINE_COMMIT = (git rev-parse HEAD 2>$null).Trim()
+    } catch {}
+    $BRANCH_NAME = "unknown"
+    try {
+        $BRANCH_NAME = (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
     } catch {}
 
     $session = @{
@@ -47,7 +58,7 @@ if (!(Test-Path "$SESSION_FILE")) {
             strict_mode = $false
             test_command = "npm test"
             typecheck_command = "npx tsc --noEmit"
-            branch_name = "refactor/archaeology"
+            branch_name = $BRANCH_NAME
         }
         started_at = $NOW
         updated_at = $NOW
