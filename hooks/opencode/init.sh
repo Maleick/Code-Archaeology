@@ -28,6 +28,11 @@ fi
 mkdir -p "$ARCHAEOLOGY_DIR"
 mkdir -p "$ARCHAEOLOGY_DIR/patches"
 
+if [[ -L "$SESSION_FILE" ]]; then
+  echo "Error: session.json is a symlink. Refusing to write to symlinked session file." >&2
+  exit 1
+fi
+
 # Initialize session.json
 if [[ ! -f "$SESSION_FILE" ]]; then
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")

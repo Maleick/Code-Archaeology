@@ -342,6 +342,34 @@ test("OpenCode init hook does not follow predictable session temp symlinks when 
   }
 });
 
+test("OpenCode init hook refuses symlinked session.json without overwriting the target", async () => {
+  const repo = await makeHookRepo();
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "victim.txt");
+  const victimContent = "do not overwrite\n";
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(victim, victimContent);
+    await symlink(victim, join(repo, ".archaeology", "session.json"));
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], { cwd: repo }),
+      (error) => {
+        assert.equal(error.code, 1);
+        assert.match(error.stderr, /Refusing to write to symlinked session file/);
+        return true;
+      },
+    );
+
+    const sessionStat = await lstat(join(repo, ".archaeology", "session.json"));
+    assert.equal(sessionStat.isSymbolicLink(), true);
+    assert.equal(await readFile(victim, "utf8"), victimContent);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+    await rm(victimDir, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode verify hook fails when test command fails", async () => {
   const repo = await makeHookRepo();
   try {
