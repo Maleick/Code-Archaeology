@@ -33,7 +33,7 @@ foreach ($expedition in $session.expeditions) {
         if ($STATUS -eq "running") {
             $expedition | Add-Member -MemberType NoteProperty -Name "started_at" -Value $NOW -Force
         }
-        if ($STATUS -eq "complete" -or $STATUS -eq "completed" -or $STATUS -eq "done") {
+        if ($STATUS -eq "complete") {
             $expedition | Add-Member -MemberType NoteProperty -Name "completed_at" -Value $NOW -Force
         }
         if ($ERROR_MSG) {
