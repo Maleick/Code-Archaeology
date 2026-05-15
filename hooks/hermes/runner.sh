@@ -103,6 +103,16 @@ validate_branch_name() {
 require_jq
 require_safe_session_path
 
+# Exit cleanly if the session is already complete so a stale cron invocation
+# does not silently re-initialize and destroy the finished session state.
+if [[ -f "$SESSION_FILE" ]]; then
+  _status=$(jq -r '.status // empty' "$SESSION_FILE" 2>/dev/null || true)
+  if [[ "$_status" == "complete" ]]; then
+    echo "All Code Archaeology phases are complete. Nothing to do."
+    exit 0
+  fi
+fi
+
 # Phase definitions (fixed order)
 PHASES=(
   "site-survey"

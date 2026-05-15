@@ -378,6 +378,47 @@ test("Hermes runner marks session complete after the final phase", async () => {
   }
 });
 
+test("Hermes runner exits cleanly when session is already complete", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    const completedSession = {
+      runtime: "hermes",
+      status: "complete",
+      current_phase: "",
+      completed_phases: [
+        "site-survey",
+        "dead-code",
+        "legacy-removal",
+        "dependency-mapping",
+        "type-consolidation",
+        "type-hardening",
+        "dry-stratification",
+        "error-handling",
+        "artifact-cleaning",
+        "final-catalog",
+      ],
+      mode: "survey",
+      branch_name: "refactor/archaeology",
+    };
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify(completedSession)}\n`,
+    );
+
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /All Code Archaeology phases are complete/);
+    assert.equal(session.status, "complete");
+    assert.equal(session.completed_phases.length, 10);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode init hook creates a valid session.json in a clean repository", async () => {
   const repo = await makeHookRepo();
   try {
