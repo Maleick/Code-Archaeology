@@ -34,6 +34,22 @@ test("help lists install, doctor, and version", async () => {
   assert.match(stdout, /version/);
 });
 
+test("no arguments defaults to help output", async () => {
+  const { stdout } = await runCli([]);
+
+  assert.match(stdout, /install/);
+  assert.match(stdout, /doctor/);
+  assert.match(stdout, /version/);
+});
+
+test("unknown command falls back to help output", async () => {
+  const { stdout } = await runCli(["unknown-command"]);
+
+  assert.match(stdout, /install/);
+  assert.match(stdout, /doctor/);
+  assert.match(stdout, /version/);
+});
+
 test("doctor reports core package files present", async () => {
   const { stdout } = await runCli(["doctor"]);
 
@@ -216,6 +232,22 @@ test("install does not duplicate skills path", async () => {
       config.skills.paths.filter((p) => p === join(root, "skills")).length,
       1,
     );
+  } finally {
+    await rm(configDir, { recursive: true, force: true });
+  }
+});
+
+test("install skips write and backup when config is already up to date", async () => {
+  const configDir = await mkdtemp(join(tmpdir(), "code-archaeology-install-"));
+  try {
+    await runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } });
+
+    const filesAfterFirst = await readdir(configDir);
+    const { stdout } = await runCli(["install"], { env: { OPENCODE_CONFIG_DIR: configDir } });
+    const filesAfterSecond = await readdir(configDir);
+
+    assert.match(stdout, /already up to date/);
+    assert.equal(filesAfterFirst.length, filesAfterSecond.length, "no new backup files created on idempotent install");
   } finally {
     await rm(configDir, { recursive: true, force: true });
   }
