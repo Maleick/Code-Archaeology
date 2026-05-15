@@ -25,7 +25,7 @@
 
 Excavate technical debt. Restore with confidence.
 
-Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **OpenCode** (interactive slash commands) and **Hermes Agent** (cron-based background execution).
+Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely restores codebases by removing accumulated technical sediment in a fixed, test-gated expedition order. It runs on **Claude Code** (interactive slash commands), **OpenCode** (interactive slash commands), and **Hermes Agent** (cron-based background execution).
 
 ```text
 +---------------------------------------------------------------+
@@ -35,7 +35,7 @@ Code Archaeology is a multi-runtime plugin that surveys, catalogs, and safely re
 | Review mode        | excavate: reports plus mock patches       |
 | Restore mode       | applies approved changes with test gates  |
 | Local state        | .archaeology/ runtime artifacts           |
-| Runtimes           | OpenCode plugin + Hermes Agent cron       |
+| Runtimes           | Claude Code + OpenCode + Hermes Agent     |
 | Platforms          | macOS/Linux (bash) + Windows (PowerShell) |
 | Expedition order   | fixed stratigraphy from survey to catalog |
 +-------------------+-------------------------------------------+
@@ -52,9 +52,25 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 - Hardens weak types without guessing uncertain replacements.
 - Finds semantic duplication and error-handling slop while preserving I/O boundaries.
 - Produces `.archaeology/` reports that stay local to the working repository.
-- Supports both **OpenCode** interactive sessions and **Hermes Agent** cron-based phased execution.
+- Supports **Claude Code** interactive sessions, **OpenCode** interactive sessions, and **Hermes Agent** cron-based phased execution.
 
 ## Installation
+
+### Claude Code
+
+Copy the commands and skill into your project's `.claude/` directory:
+
+```bash
+# From the Code-Archaeology repo root
+cp commands/code-archaeology*.md /path/to/your-project/.claude/commands/
+mkdir -p /path/to/your-project/.claude/plugins/code-archaeology/skills/code-archaeology
+cp skills/claude-code/SKILL.md \
+  /path/to/your-project/.claude/plugins/code-archaeology/skills/code-archaeology/SKILL.md
+```
+
+Restart Claude Code, then run `/code-archaeology` from inside your target repository.
+
+See [`skills/claude-code/INTEGRATION.md`](skills/claude-code/INTEGRATION.md) for global install, session flow, and troubleshooting.
 
 ### OpenCode
 
@@ -105,6 +121,15 @@ See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and tr
 
 ## Quick Start
 
+### Claude Code
+
+Run the command family from inside the repository you want to inspect:
+
+```text
+/code-archaeology
+/code-archaeology --yolo
+```
+
 ### OpenCode
 
 Run the command family from inside the repository you want to inspect:
@@ -136,15 +161,15 @@ Ten phases complete in ~2.5 hours minimum (15-minute intervals).
 
 ## Runtime Surfaces
 
-| Feature | OpenCode | Hermes Agent |
-|---------|----------|--------------|
-| Entry | `/code-archaeology` slash command | `cronjob` |
-| Phases | All in one session | One per cron run |
-| Verification | Between expeditions | Between every phase |
-| Revert | Manual or automatic | Automatic on failure |
-| State | `.archaeology/session.json` | Same file |
-| Background | Plugin stays active | Cron resumes automatically |
-| Real-time | Yes | Delayed (15-min intervals) |
+| Feature | Claude Code | OpenCode | Hermes Agent |
+|---------|-------------|----------|--------------|
+| Entry | `/code-archaeology` slash command | `/code-archaeology` slash command | `cronjob` |
+| Phases | All in one session | All in one session | One per cron run |
+| Phase tracking | `TodoWrite` todos | Internal session state | `.archaeology/session.json` |
+| Verification | Between expeditions | Between expeditions | Between every phase |
+| Revert | Manual or automatic | Manual or automatic | Automatic on failure |
+| Background | Not applicable | Plugin stays active | Cron resumes automatically |
+| Real-time | Yes | Yes | Delayed (15-min intervals) |
 
 ## Expedition Flow
 
@@ -185,7 +210,7 @@ flowchart LR
 
 ## Commands
 
-### OpenCode
+### Claude Code and OpenCode
 
 | Command | Purpose | File changes |
 | --- | --- | --- |
@@ -251,7 +276,7 @@ If a preferred tool is missing, Code Archaeology falls back to AST-based manual 
 ```text
 Code-Archaeology/
 |-- assets/             # README and repository visual assets
-|-- commands/           # OpenCode slash command definitions
+|-- commands/           # Slash command definitions (Claude Code + OpenCode)
 |-- dist/               # Built package output for GitHub-based installs
 |-- docs/               # Public docs and release notes
 |-- hooks/opencode/     # Init, verification, revert, and status hooks
@@ -261,6 +286,7 @@ Code-Archaeology/
 |-- schema/             # JSON schemas for reports
 |-- skills/             # Code Archaeology skill definitions
 |   |-- code-archaeology/   # OpenCode skill
+|   |-- claude-code/        # Claude Code skill and integration docs
 |   `-- hermes/             # Hermes Agent skill and integration docs
 |-- src/                # TypeScript source
 |-- INSTALL.md          # Multi-runtime install handoff
