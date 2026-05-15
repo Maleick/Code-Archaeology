@@ -33,12 +33,15 @@ if [[ ! -f "$SESSION_FILE" ]]; then
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   SESSION_ID="archaeology-$(date -u +%s)-$$"
   BASELINE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
-  
-  jq -n \
+  BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+
+  tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
+  if jq -n \
     --arg sid "$SESSION_ID" \
     --arg now "$NOW" \
     --arg ver "$PLUGIN_VERSION" \
     --arg baseline "$BASELINE_COMMIT" \
+    --arg branch "$BRANCH_NAME" \
     '{
       version: 1,
       plugin_version: $ver,
@@ -50,7 +53,7 @@ if [[ ! -f "$SESSION_FILE" ]]; then
         strict_mode: false,
         test_command: "npm test",
         typecheck_command: "npx tsc --noEmit",
-        branch_name: "refactor/archaeology"
+        branch_name: $branch
       },
       started_at: $now,
       updated_at: $now,
@@ -70,14 +73,29 @@ if [[ ! -f "$SESSION_FILE" ]]; then
       auto_fixable_count: 0,
       baseline_commit: $baseline,
       completed: false
-    }' > "$SESSION_FILE"
+    }' > "$tmp"; then
+    chmod 600 "$tmp" 2>/dev/null || true
+    mv -f "$tmp" "$SESSION_FILE"
+  else
+    rm -f "$tmp"
+    echo "Error: failed to initialize session" >&2
+    exit 1
+  fi
   echo "Initialized $SESSION_FILE"
 else
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  jq --arg now "$NOW" \
-     --arg ver "$PLUGIN_VERSION" \
-     '.updated_at = $now | .plugin_version = $ver' \
-     "$SESSION_FILE" > "$SESSION_FILE.tmp" && mv "$SESSION_FILE.tmp" "$SESSION_FILE"
+  tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
+  if jq --arg now "$NOW" \
+        --arg ver "$PLUGIN_VERSION" \
+        '.updated_at = $now | .plugin_version = $ver' \
+        "$SESSION_FILE" > "$tmp"; then
+    chmod 600 "$tmp" 2>/dev/null || true
+    mv -f "$tmp" "$SESSION_FILE"
+  else
+    rm -f "$tmp"
+    echo "Error: failed to refresh session" >&2
+    exit 1
+  fi
   echo "Refreshed $SESSION_FILE"
 fi
 

@@ -5,9 +5,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export const packageRoot = resolve(__dirname, "..");
-export const id = "code-archaeology";
-export const repoRoot = packageRoot;
+const packageRoot = resolve(__dirname, "..");
 
 const versionPath = resolve(packageRoot, "VERSION");
 const packageJsonPath = resolve(packageRoot, "package.json");
