@@ -267,6 +267,117 @@ test("Hermes runner blocks restore mode until restore implementation exists", as
   }
 });
 
+test("Hermes runner excavate mode writes a mock patch file and advances phase", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "running",
+        current_phase: "dead-code",
+        completed_phases: ["site-survey"],
+        mode: "excavate",
+        test_command: "true",
+        typecheck_command: "true",
+        branch_name: "refactor/archaeology",
+      })}\n`,
+    );
+
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /EXCAVATE/);
+    assert.match(stdout, /Mock patch written/);
+    const patchContent = await readFile(
+      join(repo, ".archaeology", "patches", "expedition2-mock.patch"),
+      "utf8",
+    );
+    assert.match(patchContent, /dead-code/);
+    assert.deepEqual(session.completed_phases, ["site-survey", "dead-code"]);
+    assert.equal(session.current_phase, "legacy-removal");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("Hermes runner blocks unknown mode without advancing phase", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "running",
+        current_phase: "site-survey",
+        completed_phases: [],
+        mode: "badmode",
+        test_command: "true",
+        typecheck_command: "true",
+        branch_name: "refactor/archaeology",
+      })}\n`,
+    );
+
+    await assert.rejects(
+      execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], { cwd: repo }),
+      /Unknown Hermes mode/,
+    );
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(session.status, "blocked");
+    assert.equal(session.flags.blocked_reason, "unknown mode: badmode");
+    assert.deepEqual(session.completed_phases, []);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("Hermes runner marks session complete after the final phase", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "running",
+        current_phase: "final-catalog",
+        completed_phases: [
+          "site-survey",
+          "dead-code",
+          "legacy-removal",
+          "dependency-mapping",
+          "type-consolidation",
+          "type-hardening",
+          "dry-stratification",
+          "error-handling",
+          "artifact-cleaning",
+        ],
+        mode: "survey",
+        test_command: "true",
+        typecheck_command: "true",
+        branch_name: "refactor/archaeology",
+      })}\n`,
+    );
+
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /ALL PHASES COMPLETE/);
+    assert.equal(session.status, "complete");
+    assert.equal(session.current_phase, "");
+    assert.ok(session.completed_phases.includes("final-catalog"));
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode init hook creates a valid session.json in a clean repository", async () => {
   const repo = await makeHookRepo();
   try {
