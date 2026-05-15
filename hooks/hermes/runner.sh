@@ -251,20 +251,13 @@ else
 fi
 
 # Update session: mark phase complete, advance to next
-completed=$(jq -r '.completed_phases | join(",")' "$SESSION_FILE")
-if [[ -n "$completed" ]]; then
-  completed="$completed,$current_phase"
-else
-  completed="$current_phase"
-fi
-
 next_phase=""
 if [[ $phase_idx -lt $((${#PHASES[@]} - 1)) ]]; then
   next_phase="${PHASES[$((phase_idx + 1))]}"
 fi
 
-write_session_jq --arg completed "$completed" --arg next "$next_phase" \
-  '.completed_phases = ($completed | split(",")) | .current_phase = $next'
+write_session_jq --arg phase "$current_phase" --arg next "$next_phase" \
+  '.completed_phases = ((.completed_phases // []) + [$phase]) | .current_phase = $next'
 
 if [[ -n "$next_phase" ]]; then
   echo ""

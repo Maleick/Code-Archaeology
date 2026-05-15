@@ -67,6 +67,37 @@ test("Hermes runner initializes a valid shared session without current_phase", a
   }
 });
 
+test("Hermes runner advances current_phase and appends to completed_phases", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(
+      join(repo, ".archaeology", "session.json"),
+      `${JSON.stringify({
+        runtime: "hermes",
+        status: "running",
+        current_phase: "dead-code",
+        completed_phases: ["site-survey"],
+        mode: "survey",
+        test_command: "true",
+        typecheck_command: "true",
+        branch_name: "refactor/archaeology",
+      })}\n`,
+    );
+
+    const { stdout } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "runner.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.match(stdout, /Phase dead-code complete/);
+    assert.deepEqual(session.completed_phases, ["site-survey", "dead-code"]);
+    assert.equal(session.current_phase, "legacy-removal");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("Hermes runner refuses symlinked shared sessions without overwriting the target", async () => {
   const repo = await makeHookRepo();
   const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
