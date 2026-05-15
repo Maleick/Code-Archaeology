@@ -27,11 +27,21 @@ Restart OpenCode. Commands should be available inside a Git repository:
 `/code-archaeology` runs the full 10-phase survey chain by default without per-phase prompts. It writes reports under `.archaeology/` and makes no source-code changes. Use `/code-archaeology-restore` only after reviewing the reports and deciding to apply changes.
 `/code-archaeology --yolo` runs full restoration in one shot with `strict_mode` enabled.
 
+## Codex Skill Install
+
+```bash
+npm install -g opencode-code-archaeology
+opencode-code-archaeology install-codex
+```
+
+Restart Codex or start a new Codex session, then ask Codex to use `code-archaeology` in survey, excavate, or restore mode from inside a Git repository.
+
 ## npm CLI Path
 
 ```bash
 npm install -g opencode-code-archaeology
 opencode-code-archaeology install
+opencode-code-archaeology install-codex
 opencode-code-archaeology doctor
 opencode-code-archaeology version
 ```

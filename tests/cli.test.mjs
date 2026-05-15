@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -29,6 +29,7 @@ test("help lists install, doctor, and version", async () => {
   const { stdout } = await runCli(["help"]);
 
   assert.match(stdout, /install/);
+  assert.match(stdout, /install-codex/);
   assert.match(stdout, /doctor/);
   assert.match(stdout, /version/);
 });
@@ -39,6 +40,7 @@ test("doctor reports core package files present", async () => {
   assert.match(stdout, /Code Archaeology package files present/);
   assert.match(stdout, /commands\/code-archaeology\.md/);
   assert.match(stdout, /skills\/code-archaeology\/SKILL\.md/);
+  assert.match(stdout, /skills\/codex\/SKILL\.md/);
   assert.match(stdout, /hooks\/opencode\/init\.sh/);
   assert.match(stdout, /hooks\/opencode\/verify-phase\.sh/);
   assert.match(stdout, /hooks\/hermes\/setup\.sh/);
@@ -47,6 +49,40 @@ test("doctor reports core package files present", async () => {
   assert.match(stdout, /AGENTS\.md/);
   assert.match(stdout, /README\.md/);
   assert.match(stdout, /INSTALL\.md/);
+});
+
+test("install-codex copies Codex skill into CODEX_HOME", async () => {
+  const codexHome = await mkdtemp(join(tmpdir(), "code-archaeology-codex-"));
+  try {
+    const { stdout } = await runCli(["install-codex"], { env: { CODEX_HOME: codexHome } });
+    const skillPath = join(codexHome, "skills", "code-archaeology", "SKILL.md");
+    const skill = await readFile(skillPath, "utf8");
+
+    assert.match(stdout, /Installed Code Archaeology Codex skill/);
+    assert.match(skill, /name: code-archaeology/);
+    assert.match(skill, /Code Archaeology For Codex/);
+  } finally {
+    await rm(codexHome, { recursive: true, force: true });
+  }
+});
+
+test("install-codex creates non-overwriting backups for existing skill", async () => {
+  const codexHome = await mkdtemp(join(tmpdir(), "code-archaeology-codex-"));
+  try {
+    const skillDir = join(codexHome, "skills", "code-archaeology");
+    const skillPath = join(skillDir, "SKILL.md");
+    await mkdir(skillDir, { recursive: true });
+    await writeFile(skillPath, "existing skill\n");
+    await writeFile(`${skillPath}.bak`, "existing backup\n");
+
+    await runCli(["install-codex"], { env: { CODEX_HOME: codexHome } });
+
+    const files = await readdir(skillDir);
+    assert.equal(await readFile(`${skillPath}.bak`, "utf8"), "existing backup\n");
+    assert.ok(files.some((file) => /^SKILL\.md\.bak\.\d+$/.test(file)));
+  } finally {
+    await rm(codexHome, { recursive: true, force: true });
+  }
 });
 
 test("doctor exits non-zero and lists missing package files", async () => {

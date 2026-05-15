@@ -119,6 +119,17 @@ hermes cronjob create \
 
 See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and troubleshooting.
 
+### Codex
+
+Install the Codex skill into `$CODEX_HOME/skills`:
+
+```bash
+npm install -g opencode-code-archaeology@2.2.0
+opencode-code-archaeology install-codex
+```
+
+Restart Codex or start a new Codex session, then ask Codex to use `code-archaeology` in the target repository. The Codex skill follows the same report-first expedition order and writes local `.archaeology/` artifacts.
+
 ## Quick Start
 
 ### Claude Code
@@ -148,6 +159,16 @@ Run the command family from inside the repository you want to inspect:
 ```
 
 `--yolo` uses the full restore workflow in one shot (`yolo` mode), applying `HIGH` + `MEDIUM` confidence findings automatically.
+
+### Codex
+
+Ask Codex to use the `code-archaeology` skill from inside the repository you want to inspect:
+
+```text
+Use code-archaeology in survey mode.
+Use code-archaeology in excavate mode.
+Use code-archaeology in restore mode after reviewing the reports.
+```
 
 ### Hermes Agent
 
@@ -219,6 +240,15 @@ flowchart LR
 | `/code-archaeology-survey` | Generate site reports for review. | None outside `.archaeology/`. |
 | `/code-archaeology-excavate` | Generate reports and mock patches. | None outside `.archaeology/patches/`. |
 | `/code-archaeology-restore` | Apply approved high-confidence changes. | Yes, test-gated. |
+
+### Codex
+
+| Intent | Codex request | File changes |
+| --- | --- | --- |
+| Survey | `Use code-archaeology in survey mode` | None outside `.archaeology/` |
+| Excavate | `Use code-archaeology in excavate mode` | None outside `.archaeology/patches/` |
+| Restore | `Use code-archaeology in restore mode` | Yes, test-gated |
+| YOLO | `Use code-archaeology in yolo mode` | Yes, strict and test-gated |
 
 ### Hermes Agent
 

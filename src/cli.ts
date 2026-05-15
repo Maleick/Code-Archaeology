@@ -11,6 +11,7 @@ const PLUGIN = "opencode-code-archaeology@git+https://github.com/Maleick/Code-Ar
 const REQUIRED_FILES = [
   "commands/code-archaeology.md",
   "skills/code-archaeology/SKILL.md",
+  "skills/codex/SKILL.md",
   "hooks/opencode/init.sh",
   "hooks/opencode/verify-phase.sh",
   "hooks/hermes/setup.sh",
@@ -24,6 +25,7 @@ const REQUIRED_FILES = [
 const REQUIRED_FILES_PS1 = [
   "commands/code-archaeology.md",
   "skills/code-archaeology/SKILL.md",
+  "skills/codex/SKILL.md",
   "hooks/opencode/init.ps1",
   "hooks/opencode/verify-phase.ps1",
   "hooks/hermes/setup.ps1",
@@ -37,10 +39,16 @@ const REQUIRED_FILES_PS1 = [
 const cliFile = fileURLToPath(import.meta.url);
 const root = dirname(dirname(cliFile));
 const skillsPath = join(root, "skills");
+const codexSkillSource = join(root, "skills", "codex", "SKILL.md");
 
 function configPath(): string {
   const configDir = process.env.OPENCODE_CONFIG_DIR || join(process.env.HOME || ".", ".config", "opencode");
   return join(configDir, "opencode.json");
+}
+
+function codexSkillPath(): string {
+  const codexHome = process.env.CODEX_HOME || join(process.env.HOME || ".", ".codex");
+  return join(codexHome, "skills", "code-archaeology", "SKILL.md");
 }
 
 function backupPath(target: string): string {
@@ -64,11 +72,14 @@ function printHelp(): void {
 Usage:
   opencode-code-archaeology help
   opencode-code-archaeology install
+  opencode-code-archaeology install-codex
   opencode-code-archaeology doctor
   opencode-code-archaeology version
 
 Commands:
   install   Add Code Archaeology to opencode.json plugin array
+  install-codex
+            Install the Code Archaeology skill into $CODEX_HOME/skills
   doctor    Verify core package files are present
   version   Print the package version
   help      Show this help`);
@@ -114,6 +125,25 @@ async function install(): Promise<void> {
   console.log("Cross-platform: uses .ps1 hooks on Windows, .sh hooks on Unix.");
 }
 
+async function installCodex(): Promise<void> {
+  const target = codexSkillPath();
+  await mkdir(dirname(target), { recursive: true });
+  let backup: string | undefined;
+  if (existsSync(target)) {
+    backup = backupPath(target);
+    await copyFile(target, backup);
+  }
+  await copyFile(codexSkillSource, target);
+
+  console.log(`Installed Code Archaeology Codex skill to ${target}`);
+  if (backup) {
+    console.log(`Backup written to ${backup}`);
+  }
+  console.log("Next steps:");
+  console.log("1. Restart Codex or start a new Codex session so skills are reloaded.");
+  console.log("2. Ask Codex to use the code-archaeology skill in your target repository.");
+}
+
 function doctor(): void {
   const files = isWindows() ? REQUIRED_FILES_PS1 : REQUIRED_FILES;
   const missing = files.filter((file) => !existsSync(join(root, file)));
@@ -141,6 +171,8 @@ try {
     doctor();
   } else if (command === "install") {
     await install();
+  } else if (command === "install-codex") {
+    await installCodex();
   } else {
     printHelp();
   }

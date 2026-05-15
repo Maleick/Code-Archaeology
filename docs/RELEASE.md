@@ -52,7 +52,7 @@ Expected outcomes:
 - Build and typecheck pass.
 - npm audit reports no moderate-or-higher vulnerabilities.
 - npm outdated reports `{}` or no actionable outdated dependencies.
-- Shell hooks pass syntax checks (both OpenCode and Hermes).
+- Shell hooks pass syntax checks (OpenCode and Hermes) and the Codex skill is included in package diagnostics.
 - The package dry run includes required files.
 
 ## 5. npm Pack Required Files

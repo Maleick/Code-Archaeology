@@ -1,6 +1,6 @@
 # Code Archaeology Architecture
 
-Code Archaeology is a multi-runtime plugin that operates entirely inside the target repository. It coordinates slash commands (OpenCode), cron-based execution (Hermes), a domain skill, shell hooks, prompts, schemas, and local `.archaeology/` artifacts to run a fixed excavation workflow.
+Code Archaeology is a multi-runtime plugin that operates entirely inside the target repository. It coordinates slash commands (OpenCode), native skills (Codex), cron-based execution (Hermes), shell hooks, prompts, schemas, and local `.archaeology/` artifacts to run a fixed excavation workflow.
 
 ## Repository Layout
 
@@ -17,6 +17,7 @@ Code-Archaeology/
 |-- schema/             # JSON schemas for reports
 |-- skills/             # Code Archaeology skill definitions
 |   |-- code-archaeology/   # OpenCode skill
+|   |-- codex/              # Codex skill
 |   `-- hermes/             # Hermes Agent skill and integration docs
 |-- src/                # TypeScript package and CLI source
 |-- wiki/               # Source pages for GitHub Wiki publication
@@ -42,6 +43,12 @@ Code-Archaeology/
 - `hooks/hermes/runner.sh` executes one expedition phase per cron run with built-in verification.
 - `skills/hermes/` contains the Hermes-specific skill prompt, integration guide, and README.
 - Hermes uses the same `.archaeology/session.json` state file as OpenCode.
+
+### Codex Surfaces
+
+- `skills/codex/SKILL.md` contains Codex-native workflow instructions and trigger metadata.
+- `opencode-code-archaeology install-codex` copies that skill to `$CODEX_HOME/skills/code-archaeology/SKILL.md`.
+- Codex uses the same `.archaeology/` artifacts and report-first expedition order as OpenCode.
 
 ## Commands, Skills, And Hooks
 
@@ -80,15 +87,15 @@ The phase order is fixed because later cleanup depends on earlier evidence:
 
 ## Runtime Comparison
 
-| Feature | OpenCode | Hermes |
-|---------|----------|--------|
-| Entry | `/code-archaeology` slash command | `cronjob` |
-| Phases | All in one session | One per cron run |
-| Verification | Between expeditions | Between every phase |
-| Revert | Manual or automatic | Automatic on failure |
-| State | `.archaeology/session.json` | Same file |
-| Background | Plugin stays active | Cron resumes automatically |
-| Real-time | Yes | Delayed (15-min intervals) |
+| Feature | OpenCode | Codex | Hermes |
+|---------|----------|-------|--------|
+| Entry | `/code-archaeology` slash command | `code-archaeology` skill | `cronjob` |
+| Phases | All in one session | All in one session | One per cron run |
+| Verification | Between expeditions | Before/after editing phases | Between every phase |
+| Revert | Manual or automatic | Manual or automatic per Codex workflow | Automatic on failure |
+| State | `.archaeology/session.json` | Same file | Same file |
+| Background | Plugin stays active | Interactive session | Cron resumes automatically |
+| Real-time | Yes | Yes | Delayed (15-min intervals) |
 
 ## Artifact Lifecycle
 
