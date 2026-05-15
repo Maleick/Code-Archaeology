@@ -20,7 +20,7 @@
   <a href="https://github.com/Maleick/Code-Archaeology/wiki">Wiki</a> |
   <a href="#commands">Commands</a> |
   <a href="#safety-model">Safety</a> |
-  <a href="#release-docs">Release</a>
+  <a href="docs/RELEASE.md">Release</a>
 </p>
 
 Excavate technical debt. Restore with confidence.
@@ -320,6 +320,7 @@ For plugin development:
 ```bash
 npm install
 npm run build
+npm test
 npm run typecheck
 npm pack --json --dry-run
 bash -n hooks/opencode/*.sh
@@ -335,13 +336,6 @@ bash hooks/opencode/verify-phase.sh final_verify
 # Hermes
 bash hooks/hermes/runner.sh
 ```
-
-## Release Docs
-
-- [`docs/README.md`](docs/README.md) is the documentation landing page.
-- [`docs/RELEASE.md`](docs/RELEASE.md) covers release preparation and publishing.
-- [`INSTALL.md`](INSTALL.md) is the raw handoff for multi-runtime installation.
-- [GitHub Releases](https://github.com/Maleick/Code-Archaeology/releases) lists published versions.
 
 ## License
 
