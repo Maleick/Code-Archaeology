@@ -77,7 +77,7 @@ See [`skills/claude-code/INTEGRATION.md`](skills/claude-code/INTEGRATION.md) for
 Paste this handoff into your agent:
 
 ```text
-Run `npm pack opencode-code-archaeology@2.8.0`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
+Run `npm pack opencode-code-archaeology@2.8.1`, extract the tarball, then open `package/INSTALL.md` from that archive and follow its instructions.
 ```
 
 Recommended plugin install in `opencode.json`:
@@ -85,7 +85,7 @@ Recommended plugin install in `opencode.json`:
 ```json
 {
   "plugin": [
-    "opencode-code-archaeology@2.8.0"
+    "opencode-code-archaeology@2.8.1"
   ]
 }
 ```
@@ -93,20 +93,20 @@ Recommended plugin install in `opencode.json`:
 Global npm install path:
 
 ```bash
-npm install -g opencode-code-archaeology@2.8.0 && opencode-code-archaeology install && opencode-code-archaeology doctor
+npm install -g opencode-code-archaeology@2.8.1 && opencode-code-archaeology install && opencode-code-archaeology doctor
 ```
 
 One-time package runner path, if your OpenCode setup supports package execution through Bun:
 
 ```bash
-bunx opencode-code-archaeology@2.8.0 install
-bunx opencode-code-archaeology@2.8.0 doctor
+bunx opencode-code-archaeology@2.8.1 install
+bunx opencode-code-archaeology@2.8.1 doctor
 ```
 
 ### Hermes Agent
 
 ```bash
-npm install -g opencode-code-archaeology@2.8.0
+npm install -g opencode-code-archaeology@2.8.1
 cd ~/projects/Code-Archaeology
 bash hooks/hermes/setup.sh
 
@@ -124,7 +124,7 @@ See [`INSTALL.md`](INSTALL.md) for prerequisites, verification, updating, and tr
 Install the Codex skill into `$CODEX_HOME/skills`:
 
 ```bash
-npm install -g opencode-code-archaeology@2.8.0
+npm install -g opencode-code-archaeology@2.8.1
 opencode-code-archaeology install-codex
 ```
 
