@@ -387,6 +387,34 @@ test("OpenCode update-expedition hook does not follow predictable session temp s
   }
 });
 
+test("OpenCode update-expedition hook refuses symlinked session.json without overwriting the target", async () => {
+  const repo = await makeHookRepo();
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "victim.txt");
+  const victimContent = `${JSON.stringify({ version: 1, completed: false })}\n`;
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(victim, victimContent);
+    await symlink(victim, join(repo, ".archaeology", "session.json"));
+
+    await assert.rejects(
+      execFileAsync(
+        "bash",
+        [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "complete", "3"],
+        { cwd: repo },
+      ),
+      /Refusing to update symlinked session file/,
+    );
+
+    const sessionStat = await lstat(join(repo, ".archaeology", "session.json"));
+    assert.equal(sessionStat.isSymbolicLink(), true);
+    assert.equal(await readFile(victim, "utf8"), victimContent);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+    await rm(victimDir, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
   const repo = await makeHookRepo();
   try {
