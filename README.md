@@ -56,6 +56,22 @@ Code Archaeology runs a systematic excavation of a repository before it changes 
 
 ## Installation
 
+### Claude Code
+
+Copy the commands and skill into your project's `.claude/` directory:
+
+```bash
+# From the Code-Archaeology repo root
+cp commands/code-archaeology*.md /path/to/your-project/.claude/commands/
+mkdir -p /path/to/your-project/.claude/plugins/code-archaeology/skills/code-archaeology
+cp skills/claude-code/SKILL.md \
+  /path/to/your-project/.claude/plugins/code-archaeology/skills/code-archaeology/SKILL.md
+```
+
+Restart Claude Code, then run `/code-archaeology` from inside your target repository.
+
+See [`skills/claude-code/INTEGRATION.md`](skills/claude-code/INTEGRATION.md) for global install, session flow, and troubleshooting.
+
 ### OpenCode
 
 Paste this handoff into your agent:
@@ -115,6 +131,15 @@ opencode-code-archaeology install-codex
 Restart Codex or start a new Codex session, then ask Codex to use `code-archaeology` in the target repository. The Codex skill follows the same report-first expedition order and writes local `.archaeology/` artifacts.
 
 ## Quick Start
+
+### Claude Code
+
+Run the command family from inside the repository you want to inspect:
+
+```text
+/code-archaeology
+/code-archaeology --yolo
+```
 
 ### OpenCode
 
@@ -206,7 +231,7 @@ flowchart LR
 
 ## Commands
 
-### OpenCode
+### Claude Code and OpenCode
 
 | Command | Purpose | File changes |
 | --- | --- | --- |
@@ -281,7 +306,7 @@ If a preferred tool is missing, Code Archaeology falls back to AST-based manual 
 ```text
 Code-Archaeology/
 |-- assets/             # README and repository visual assets
-|-- commands/           # OpenCode slash command definitions
+|-- commands/           # Slash command definitions (Claude Code + OpenCode)
 |-- dist/               # Built package output for GitHub-based installs
 |-- docs/               # Public docs and release notes
 |-- hooks/opencode/     # Init, verification, revert, and status hooks

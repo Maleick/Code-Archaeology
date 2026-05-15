@@ -8,6 +8,29 @@ Code Archaeology is a multi-runtime plugin for systematic codebase excavation. I
 - **Codex** — Interactive skill runtime (`code-archaeology`)
 - **Hermes Agent** — Cron-based background runtime (one phase per 15-minute run)
 
+## Claude Code Install
+
+Copy commands and the Claude Code skill into your project:
+
+```bash
+# macOS/Linux — from the Code-Archaeology repo root
+cp commands/code-archaeology*.md /path/to/your-project/.claude/commands/
+mkdir -p /path/to/your-project/.claude/plugins/code-archaeology/skills/code-archaeology
+cp skills/claude-code/SKILL.md \
+  /path/to/your-project/.claude/plugins/code-archaeology/skills/code-archaeology/SKILL.md
+```
+
+```powershell
+# Windows — from the Code-Archaeology repo root
+Copy-Item commands\code-archaeology*.md \path\to\your-project\.claude\commands\
+New-Item -ItemType Directory -Force \path\to\your-project\.claude\plugins\code-archaeology\skills\code-archaeology
+Copy-Item skills\claude-code\SKILL.md \path\to\your-project\.claude\plugins\code-archaeology\skills\code-archaeology\SKILL.md
+```
+
+Restart Claude Code, then run `/code-archaeology` from inside a Git repository.
+
+See [`skills/claude-code/INTEGRATION.md`](skills/claude-code/INTEGRATION.md) for global install, session flow details, and troubleshooting.
+
 ## OpenCode Handoff
 
 Paste this into OpenCode if you want the agent to install and verify the plugin for you:

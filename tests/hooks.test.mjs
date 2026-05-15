@@ -9,6 +9,33 @@ import test from "node:test";
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
 
+test("hooks with auto-sync guard do not execute git pull when origin is missing", async () => {
+  const repo = await mkdtemp(join(tmpdir(), "code-archaeology-sync-guard-"));
+  try {
+    await cp(join(root, "hooks"), join(repo, "hooks"), { recursive: true });
+    await cp(join(root, "VERSION"), join(repo, "VERSION"));
+    await execFileAsync("git", ["init"], { cwd: repo });
+    await execFileAsync("git", ["config", "user.email", "test@example.com"], { cwd: repo });
+    await execFileAsync("git", ["config", "user.name", "Test User"], { cwd: repo });
+    await writeFile(join(repo, "package.json"), `${JSON.stringify({ scripts: { test: "true" } })}\n`);
+    await execFileAsync("git", ["add", "."], { cwd: repo });
+    await execFileAsync("git", ["commit", "-m", "initial"], { cwd: repo });
+
+    // No remote configured — auto-sync should silently skip
+    const { stdout, stderr } = await execFileAsync("bash", [join(repo, "hooks", "hermes", "setup.sh")], {
+      cwd: repo,
+      env: { ...process.env },
+    });
+
+    assert.doesNotMatch(stdout, /pulling/);
+    assert.doesNotMatch(stderr, /pulling/);
+    assert.doesNotMatch(stdout, /git pull/);
+    assert.doesNotMatch(stderr, /git pull/);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 async function makeHookRepo() {
   const repo = await mkdtemp(join(tmpdir(), "code-archaeology-hooks-"));
   await cp(join(root, "hooks"), join(repo, "hooks"), { recursive: true });
