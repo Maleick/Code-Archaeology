@@ -12,25 +12,21 @@ export const repoRoot = packageRoot;
 const versionPath = resolve(packageRoot, "VERSION");
 const packageJsonPath = resolve(packageRoot, "package.json");
 
-function readVersionText(path: string): string {
-  const value = readFileSync(path, "utf8").trim();
-  return value.length > 0 ? value : "unknown";
-}
-
 function resolveVersion(): string {
   try {
-    return readVersionText(versionPath);
+    const v = readFileSync(versionPath, "utf8").trim();
+    if (v.length > 0) return v;
   } catch {
-    try {
-      const packageVersion = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
-      if (typeof packageVersion === "string" && packageVersion.length > 0) {
-        return packageVersion;
-      }
-    } catch {
-      return "0.0.0";
-    }
+    // fall through to package.json
   }
-
+  try {
+    const packageVersion = JSON.parse(readFileSync(packageJsonPath, "utf8")).version;
+    if (typeof packageVersion === "string" && packageVersion.length > 0) {
+      return packageVersion;
+    }
+  } catch {
+    return "0.0.0";
+  }
   return "0.0.0";
 }
 

@@ -40,8 +40,9 @@ if ! bash -c "$TEST_CMD"; then
 fi
 
 echo "[$PHASE] Running typecheck: $TYPECHECK_CMD"
-if ! bash -c "$TYPECHECK_CMD" 2>/dev/null; then
-  echo "[$PHASE] ⚠️ Typecheck reported errors (non-blocking for some languages)" >&2
+if ! bash -c "$TYPECHECK_CMD"; then
+  echo "[$PHASE] ❌ Typecheck FAILED" >&2
+  exit 1
 fi
 
 echo "[$PHASE] ✅ Verification passed"
