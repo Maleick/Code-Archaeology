@@ -33,6 +33,7 @@ if [[ ! -f "$SESSION_FILE" ]]; then
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   SESSION_ID="archaeology-$(date -u +%s)-$$"
   BASELINE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+  BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
   tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
   if jq -n \
@@ -40,6 +41,7 @@ if [[ ! -f "$SESSION_FILE" ]]; then
     --arg now "$NOW" \
     --arg ver "$PLUGIN_VERSION" \
     --arg baseline "$BASELINE_COMMIT" \
+    --arg branch "$BRANCH_NAME" \
     '{
       version: 1,
       plugin_version: $ver,
@@ -51,7 +53,7 @@ if [[ ! -f "$SESSION_FILE" ]]; then
         strict_mode: false,
         test_command: "npm test",
         typecheck_command: "npx tsc --noEmit",
-        branch_name: "refactor/archaeology"
+        branch_name: $branch
       },
       started_at: $now,
       updated_at: $now,
