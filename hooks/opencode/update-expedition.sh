@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Update expedition status in session.json
 # Usage: update-expedition.sh <phase> <status> [findings_count] [error_message]
 

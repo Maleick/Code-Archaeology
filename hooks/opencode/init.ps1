@@ -42,6 +42,10 @@ if (!(Test-Path "$SESSION_FILE")) {
     try {
         $BASELINE_COMMIT = (git rev-parse HEAD 2>$null).Trim()
     } catch {}
+    $BRANCH_NAME = "unknown"
+    try {
+        $BRANCH_NAME = (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
+    } catch {}
 
     $session = @{
         version = 1
@@ -54,7 +58,7 @@ if (!(Test-Path "$SESSION_FILE")) {
             strict_mode = $false
             test_command = "npm test"
             typecheck_command = "npx tsc --noEmit"
-            branch_name = "refactor/archaeology"
+            branch_name = $BRANCH_NAME
         }
         started_at = $NOW
         updated_at = $NOW

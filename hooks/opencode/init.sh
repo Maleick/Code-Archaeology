@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Initialize .archaeology/ directory for Code Archaeology.
 
 set -euo pipefail

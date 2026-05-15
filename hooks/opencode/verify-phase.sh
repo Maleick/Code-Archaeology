@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Verify that tests pass and typecheck succeeds.
 # Usage: verify-phase.sh [phase-name]
 
