@@ -86,9 +86,11 @@ async function install() {
     if (exists) {
         config = JSON.parse(await readFile(target, "utf8"));
     }
+    let changed = false;
     const plugins = Array.isArray(config.plugin) ? config.plugin : [];
     if (!plugins.includes(PLUGIN)) {
         config.plugin = [...plugins, PLUGIN];
+        changed = true;
     }
     const skills = typeof config.skills === "object" && config.skills !== null ? config.skills : {};
     const paths = Array.isArray(skills.paths)
@@ -96,8 +98,13 @@ async function install() {
         : [];
     if (!paths.includes(skillsPath)) {
         config.skills = { ...skills, paths: [...paths, skillsPath] };
+        changed = true;
     }
     await mkdir(dirname(target), { recursive: true });
+    if (!changed && exists) {
+        console.log(`${target} is already up to date`);
+        return;
+    }
     let backup;
     if (exists) {
         backup = backupPath(target);
