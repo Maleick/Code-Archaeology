@@ -350,6 +350,41 @@ test("OpenCode verify hook forwards typecheck stderr output to operator", async 
   }
 });
 
+test("OpenCode update-expedition hook does not follow predictable session temp symlinks", async () => {
+  const repo = await makeHookRepo();
+  const victimDir = await mkdtemp(join(tmpdir(), "code-archaeology-victim-"));
+  const victim = join(victimDir, "victim.txt");
+  try {
+    await mkdir(join(repo, ".archaeology"));
+    await writeFile(victim, "do not overwrite\n");
+    const session = {
+      version: 1,
+      updated_at: "2025-01-01T00:00:00Z",
+      expeditions: [
+        { phase: "survey", name: "Site Survey", status: "pending", findings_count: 0 },
+      ],
+      total_findings: 0,
+    };
+    await writeFile(join(repo, ".archaeology", "session.json"), `${JSON.stringify(session)}\n`);
+    await symlink(victim, join(repo, ".archaeology", "session.json.tmp"));
+
+    await execFileAsync(
+      "bash",
+      [join(repo, "hooks", "opencode", "update-expedition.sh"), "survey", "complete", "3"],
+      { cwd: repo },
+    );
+
+    assert.equal(await readFile(victim, "utf8"), "do not overwrite\n");
+    const updated = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(updated.expeditions[0].status, "complete");
+    assert.equal(updated.expeditions[0].findings_count, 3);
+    assert.equal(updated.total_findings, 3);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+    await rm(victimDir, { recursive: true, force: true });
+  }
+});
+
 test("OpenCode revert hook preserves reverted changes in a named stash", async () => {
   const repo = await makeHookRepo();
   try {
