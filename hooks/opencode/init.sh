@@ -39,7 +39,7 @@ if [[ ! -f "$SESSION_FILE" ]]; then
   NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   SESSION_ID="archaeology-$(date -u +%s)-$$"
   BASELINE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
-  BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+  BRANCH_NAME="refactor/archaeology"
 
   tmp=$(mktemp "$ARCHAEOLOGY_DIR/session.json.XXXXXX")
   if jq -n \

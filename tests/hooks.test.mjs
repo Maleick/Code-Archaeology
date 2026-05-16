@@ -488,7 +488,6 @@ test("OpenCode init hook creates a valid session.json in a clean repository", as
       cwd: repo,
     });
 
-    const { stdout: gitBranch } = await execFileAsync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd: repo });
     const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
     assert.match(stdout, /Initialized/);
     assert.equal(session.version, 1);
@@ -496,7 +495,23 @@ test("OpenCode init hook creates a valid session.json in a clean repository", as
     assert.equal(session.expeditions.length, 10);
     assert.ok(typeof session.session_id === "string" && session.session_id.startsWith("archaeology-"));
     assert.equal(session.total_findings, 0);
-    assert.equal(session.config.branch_name, gitBranch.trim());
+    assert.equal(session.config.branch_name, "refactor/archaeology");
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("OpenCode init hook uses the isolated work branch instead of the current branch", async () => {
+  const repo = await makeHookRepo();
+  try {
+    await execFileAsync("git", ["checkout", "-b", "main"], { cwd: repo });
+
+    await execFileAsync("bash", [join(repo, "hooks", "opencode", "init.sh")], {
+      cwd: repo,
+    });
+
+    const session = JSON.parse(await readFile(join(repo, ".archaeology", "session.json"), "utf8"));
+    assert.equal(session.config.branch_name, "refactor/archaeology");
   } finally {
     await rm(repo, { recursive: true, force: true });
   }
